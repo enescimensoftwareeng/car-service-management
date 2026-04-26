@@ -1,28 +1,18 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ServiceItem extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'service_id',
-        'description',
-        'quantity',
-        'price',
-    ];
+    protected $fillable = ['service_id', 'name', 'quantity', 'price'];
 
-    /**
-     * Kalemin ait olduğu servis kaydını getirir.
-     */
-    public function service(): BelongsTo
+    // Bu kalem hangi servise (iş emrine) ait?
+    public function service()
     {
         return $this->belongsTo(Service::class);
     }
