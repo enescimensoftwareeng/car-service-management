@@ -17,9 +17,17 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
+            // --- EKLENMESİ GEREKEN İKİ SATIR ---
+            $table->unsignedBigInteger('role_id')->nullable();
+            $table->string('phone', 20)->nullable();
+            // ------------------------------------
+
             $table->rememberToken();
             $table->timestamps();
         });
+
+        // ... (alt kısımdaki şifre sıfırlama tablolarına dokunma)
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

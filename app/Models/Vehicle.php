@@ -13,9 +13,9 @@ class Vehicle extends Model
 {
     use HasFactory;
 
+    // Veritabanımızdaki sütunlara göre güncelledik (owner_id)
     protected $fillable = [
-        'user_id',
-        'brand_id',
+        'owner_id',
         'plate',
         'model',
         'chassis_no',
@@ -26,7 +26,8 @@ class Vehicle extends Model
      */
     public function owner(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        // Laravel'e "user_id yerine owner_id sütununa bak" talimatını verdik
+        return $this->belongsTo(User::class, 'owner_id');
     }
 
     /**
