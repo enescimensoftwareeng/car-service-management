@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
 
-            // BİZİM EKLEDİĞİMİZ SÜTUNLAR
+            // SÜTUNLAR (Tekil ve Temiz)
             $table->foreignId('role_id')->nullable()->constrained('roles')->onDelete('set null');
             $table->string('phone', 20)->nullable();
 
@@ -22,17 +22,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-
-            // --- EKLENMESİ GEREKEN İKİ SATIR ---
-            $table->unsignedBigInteger('role_id')->nullable();
-            $table->string('phone', 20)->nullable();
-            // ------------------------------------
-
             $table->rememberToken();
             $table->timestamps();
         });
-
-        // ... (alt kısımdaki şifre sıfırlama tablolarına dokunma)
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
