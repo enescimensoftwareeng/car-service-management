@@ -1,8 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 
 export default function Show({ auth, service }) {
-    // Parça ekleme formu için state yönetimi
     const { data, setData, post, processing, reset, errors } = useForm({
         name: '',
         quantity: 1,
@@ -12,16 +11,22 @@ export default function Show({ auth, service }) {
     const submitItem = (e) => {
         e.preventDefault();
         post(route('services.add-item', service.id), {
-            onSuccess: () => reset(), // Başarılı olursa formu temizle
+            onSuccess: () => reset(),
         });
     };
 
-    // Eklenen kalemlerin toplam fiyatını hesapla
+    // YENİ: Durum güncelleme fonksiyonu
+    const changeStatus = (newStatus) => {
+        router.patch(route('services.update-status', service.id), { status: newStatus }, {
+            preserveScroll: true
+        });
+    };
+
     const totalCost = service.items?.reduce((total, item) => total + (item.price * item.quantity), 0) || 0;
 
     return (
         <AuthenticatedLayout
-            user={auth.user}
+            user={auth?.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">İş Emri Detayı: #{service.id}</h2>}
         >
             <Head title={`Servis #${service.id}`} />
@@ -29,27 +34,43 @@ export default function Show({ auth, service }) {
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-                    {/* ÜST KART: Araç ve Müşteri Şikayeti */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-yellow-500">
-                        <div className="flex justify-between">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div>
                                 <h3 className="text-2xl font-bold">{service.vehicle?.plate}</h3>
                                 <p className="text-gray-600">{service.vehicle?.brand?.name} {service.vehicle?.model}</p>
-                                <p className="mt-4"><strong>Şikayet:</strong> {service.complaint}</p>
+                                <p className="mt-2"><strong>Şikayet:</strong> {service.complaint}</p>
+                                <p className="text-sm text-gray-500 mt-1">Sorumlu Usta: {service.technician?.name} | Giriş KM: {service.km_entry}</p>
                             </div>
-                            <div className="text-right">
-                                <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold">
-                                    {service.status}
-                                </span>
-                                <p className="mt-2 text-sm text-gray-500">Sorumlu Usta: {service.technician?.name}</p>
-                                <p className="text-sm text-gray-500">Giriş KM: {service.km_entry}</p>
+
+                            {/* GÜNCELLENEN KISIM: Durum Değiştirme Butonları */}
+                            <div className="flex flex-col items-end gap-2 bg-gray-50 p-3 rounded-lg border">
+                                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Servis Durumu</span>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => changeStatus('Beklemede')}
+                                        className={`px-3 py-1.5 rounded-md text-xs font-bold transition ${service.status === 'Beklemede' ? 'bg-yellow-500 text-white shadow-inner' : 'bg-white border text-gray-600 hover:bg-yellow-50'}`}
+                                    >
+                                        Beklemede
+                                    </button>
+                                    <button
+                                        onClick={() => changeStatus('İşlemde')}
+                                        className={`px-3 py-1.5 rounded-md text-xs font-bold transition ${service.status === 'İşlemde' ? 'bg-blue-500 text-white shadow-inner' : 'bg-white border text-gray-600 hover:bg-blue-50'}`}
+                                    >
+                                        İşlemde
+                                    </button>
+                                    <button
+                                        onClick={() => changeStatus('Tamamlandı')}
+                                        className={`px-3 py-1.5 rounded-md text-xs font-bold transition ${service.status === 'Tamamlandı' ? 'bg-green-500 text-white shadow-inner' : 'bg-white border text-gray-600 hover:bg-green-50'}`}
+                                    >
+                                        Tamamlandı
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                        {/* SOL TARAF: Eklenen Kalemler ve Fatura */}
                         <div className="lg:col-span-2 bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                             <h3 className="text-lg font-bold mb-4 border-b pb-2">Yapılan İşlemler & Parçalar</h3>
 
@@ -88,7 +109,7 @@ export default function Show({ auth, service }) {
                             </div>
                         </div>
 
-                        {/* SAĞ TARAF: Yeni Kalem Ekleme Formu */}
+                        {/* Faturaya Ekleme Formu */}
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 bg-gray-50">
                             <h3 className="text-lg font-bold mb-4 border-b pb-2 text-blue-600">+ Yeni Kalem Ekle</h3>
                             <form onSubmit={submitItem} className="space-y-4">
@@ -99,7 +120,7 @@ export default function Show({ auth, service }) {
                                         value={data.name}
                                         onChange={e => setData('name', e.target.value)}
                                         className="mt-1 block w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm"
-                                        placeholder="Örn: Motor Yağı, Fren Balatası..."
+                                        placeholder="Örn: Motor Yağı..."
                                     />
                                     {errors.name && <div className="text-red-500 text-xs mt-1">{errors.name}</div>}
                                 </div>
@@ -138,7 +159,6 @@ export default function Show({ auth, service }) {
                                 </button>
                             </form>
                         </div>
-
                     </div>
                 </div>
             </div>

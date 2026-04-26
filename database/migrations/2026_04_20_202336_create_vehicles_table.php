@@ -13,14 +13,11 @@ return new class extends Migration
     {
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
-
-            // --- EKLENMESİ GEREKEN SÜTUNLAR ---
-            $table->unsignedBigInteger('owner_id'); // Aracı ekleyen kişi (şimdilik Admin)
-            $table->string('plate', 20)->unique();  // Plaka (benzersiz)
-            $table->string('model', 100);           // Model
-            $table->string('chassis_no', 17)->unique(); // Şasi No (benzersiz)
-            // ----------------------------------
-
+            $table->string('plate')->unique();
+            $table->foreignId('brand_id')->constrained();
+            $table->string('model');
+            $table->integer('year');
+            $table->foreignId('owner_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -18,7 +18,7 @@ class Service extends Model
         'technician_id',
         'km_entry',
         'complaint',
-        'status',
+        'status'
     ];
 
     /**

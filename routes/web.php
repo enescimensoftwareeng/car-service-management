@@ -45,8 +45,11 @@ Route::middleware('auth')->group(function () {
         Route::resource('vehicles', VehicleController::class);
         Route::resource('services', ServiceController::class);
 
-        // EKSİK OLAN ROTA BURAYA EKLENDİ: Faturaya parça/işçilik ekleme rotası
+        // Faturaya parça/işçilik ekleme rotası
         Route::post('/services/{service}/items', [ServiceController::class, 'addItem'])->name('services.add-item');
+
+        // DURUM GÜNCELLEME ROTASI BURADA:
+        Route::patch('/services/{service}/status', [ServiceController::class, 'update'])->name('services.update-status');
     });
 });
 

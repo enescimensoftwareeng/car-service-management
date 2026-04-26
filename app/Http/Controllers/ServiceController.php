@@ -17,7 +17,6 @@ class ServiceController extends Controller
     public function index(): Response
     {
         return Inertia::render('Services/Index', [
-            // Araç ve Usta bilgileriyle birlikte en yenisi en üstte olacak şekilde getir
             'services' => Service::with(['vehicle', 'technician'])->latest()->get()
         ]);
     }
@@ -29,7 +28,6 @@ class ServiceController extends Controller
     {
         return Inertia::render('Services/Create', [
             'vehicles' => Vehicle::with('brand')->get(),
-            // Sadece usta rolündeki (role_id: 2) kullanıcıları çekiyoruz
             'technicians' => User::where('role_id', 2)->get()
         ]);
     }
@@ -57,7 +55,6 @@ class ServiceController extends Controller
      */
     public function show(Service $service)
     {
-        // Servise ait aracın, ustanın ve eklenen parçaların bilgilerini yükle
         $service->load(['vehicle.brand', 'technician', 'items']);
 
         return Inertia::render('Services/Show', [
@@ -66,7 +63,7 @@ class ServiceController extends Controller
     }
 
     /**
-     * 5. ÖZEL METOT: İlgili servise yeni bir parça veya işçilik kalemi ekler.
+     * 5. İlgili servise yeni bir parça veya işçilik kalemi ekler.
      */
     public function addItem(Request $request, Service $service)
     {
@@ -76,21 +73,27 @@ class ServiceController extends Controller
             'price' => 'required|numeric|min:0',
         ]);
 
-        // İlişkisel model üzerinden parçayı kaydet (service_id otomatik eklenir)
         $service->items()->create($validated);
 
         return back()->with('success', 'Kalem başarıyla eklendi.');
     }
 
     /**
-     * İleride eklenecek düzenleme ve silme işlemleri için hazır bekleyen fonksiyonlar
+     * 6. Servisin (İş emrinin) durumunu günceller. (EKSİK OLAN KISIM EKLENDİ)
      */
-    public function edit(string $id)
+    public function update(Request $request, string $id)
     {
-        // İleride dolduracağız
+        $validated = $request->validate([
+            'status' => 'required|in:Beklemede,İşlemde,Tamamlandı'
+        ]);
+
+        $service = Service::findOrFail($id);
+        $service->update($validated);
+
+        return back()->with('success', 'Servis durumu güncellendi.');
     }
 
-    public function update(Request $request, string $id)
+    public function edit(string $id)
     {
         // İleride dolduracağız
     }
