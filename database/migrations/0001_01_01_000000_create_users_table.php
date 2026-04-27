@@ -17,6 +17,14 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
+            // --- EKLENEN KISIM ---
+            // roles tablosundan önce çalıştığı için constrained() kullanmıyoruz,
+            // sadece sütunları açıyoruz.
+            $table->unsignedBigInteger('role_id')->nullable();
+            $table->string('phone', 20)->nullable();
+            // ----------------------
+
             $table->rememberToken();
             $table->timestamps();
         });

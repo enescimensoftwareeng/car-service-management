@@ -1,47 +1,25 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Service extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'vehicle_id',
-        'technician_id',
-        'km_entry',
-        'complaint',
-        'status',
-    ];
+    protected $guarded = [];
 
-    /**
-     * Servisin hangi araca yapıldığını getirir.
-     */
-    public function vehicle(): BelongsTo
+    // İş emrinin hangi araca ait olduğunu çekeceğimiz ilişki
+    public function vehicle()
     {
-        return $this->belongsTo(Vehicle::class);
+        return $this->belongsTo(Vehicle::class, 'vehicle_id');
     }
 
-    /**
-     * Sorumlu ustayı getirir.
-     */
-    public function technician(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'technician_id');
-    }
-
-    /**
-     * Serviste kullanılan kalemleri (parça/işçilik) getirir.
-     */
-    public function items(): HasMany
+    // Bir servisin (iş emrinin) birden fazla parçası/işlemi olabilir
+    public function items()
     {
         return $this->hasMany(ServiceItem::class);
     }
-}
+} // BÜTÜN SINIFI KAPATAN EN SON PARANTEZ BURADA OLMALI!

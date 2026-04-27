@@ -13,6 +13,14 @@ return new class extends Migration
     {
         Schema::create('services', function (Blueprint $table) {
             $table->id();
+
+            // --- EKLENEN SÜTUNLAR ---
+            $table->unsignedBigInteger('vehicle_id'); // Hangi araca ait olduğu
+            $table->integer('current_km'); // Servise geldiği anki kilometresi
+            $table->text('complaint'); // Müşterinin şikayeti / İstekler
+            $table->string('status')->default('pending'); // Durum: pending (beklemede), processing (işlemde), completed (tamamlandı)
+            // ----------------------------------
+
             $table->timestamps();
         });
     }
