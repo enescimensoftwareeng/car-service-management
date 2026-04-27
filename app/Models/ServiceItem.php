@@ -9,9 +9,9 @@ class ServiceItem extends Model
 {
     use HasFactory;
 
-    protected $guarded = []; // Toplu veri ekleme kilidini açtık
+    protected $fillable = ['service_id', 'name', 'quantity', 'price'];
 
-    // Bu parçanın bağlı olduğu servisi (iş emrini) getirir
+    // Bu kalem hangi servise (iş emrine) ait?
     public function service()
     {
         return $this->belongsTo(Service::class);

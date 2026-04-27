@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Service;
 use App\Models\Vehicle;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -11,55 +12,50 @@ use Inertia\Response;
 class ServiceController extends Controller
 {
     /**
-     * Tüm iş emirlerini (servisleri) listeler.
+     * 1. Tüm servis kayıtlarını (İş Emirlerini) listeler.
      */
     public function index(): Response
     {
-        $services = Service::with(['vehicle.owner'])->latest()->get();
         return Inertia::render('Services/Index', [
-            'services' => $services
+            'services' => Service::with(['vehicle', 'technician'])->latest()->get()
         ]);
     }
 
     /**
-     * Yeni iş emri oluşturma formunu gösterir.
+     * 2. Yeni iş emri açma formunu gösterir.
      */
     public function create(): Response
     {
-        $vehicles = Vehicle::with('owner')->get();
         return Inertia::render('Services/Create', [
-            'vehicles' => $vehicles
+            'vehicles' => Vehicle::with('brand')->get(),
+            'technicians' => User::where('role_id', 2)->get()
         ]);
     }
 
     /**
-     * Formdan gelen yeni iş emrini veritabanına kaydeder.
+     * 3. Yeni iş emrini veritabanına kaydeder.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
-            'current_km' => 'required|integer|min:0',
+            'technician_id' => 'required|exists:users,id',
+            'km_entry' => 'required|integer|min:0',
             'complaint' => 'required|string|max:1000',
+            'status' => 'required|in:Beklemede,İşlemde,Tamamlandı',
         ]);
 
-        Service::create([
-            'vehicle_id' => $validated['vehicle_id'],
-            'current_km' => $validated['current_km'],
-            'complaint' => $validated['complaint'],
-            'status' => 'pending',
-        ]);
+        Service::create($validated);
 
-        return redirect()->route('services.index');
+        return redirect()->route('services.index')->with('success', 'İş emri başarıyla açıldı.');
     }
 
     /**
-     * İş emrinin detaylarını (ve eklenen parçaları) gösterir.
+     * 4. Seçilen iş emrinin detay (Fatura ve Kalemler) sayfasını gösterir.
      */
-    public function show(Service $service): Response
+    public function show(Service $service)
     {
-        // Detay sayfasında aracın, müşterinin bilgilerine ve eklenen servis kalemlerine (items) ihtiyacımız var.
-        $service->load(['vehicle.owner', 'items']);
+        $service->load(['vehicle.brand', 'technician', 'items']);
 
         return Inertia::render('Services/Show', [
             'service' => $service
@@ -67,47 +63,43 @@ class ServiceController extends Controller
     }
 
     /**
-     * İş emrini düzenleme formunu gösterir.
+     * 5. İlgili servise yeni bir parça veya işçilik kalemi ekler.
      */
-    public function edit(Service $service)
-    {
-        // Şimdilik boş bırakıyoruz.
-    }
-
-    /**
-     * İş emrini günceller (Durum değiştirme).
-     */
-    public function update(Request $request, Service $service)
-    {
-        $service->update([
-            'status' => $request->status
-        ]);
-
-        return back();
-    }
-
-    /**
-     * İş emrini siler.
-     */
-    public function destroy(Service $service)
-    {
-        // Şimdilik boş bırakıyoruz.
-    }
-
-    /**
-     * Servise yeni bir parça/işçilik kalemi ekler.
-     */
-    public function storeItem(Request $request, Service $service)
+    public function addItem(Request $request, Service $service)
     {
         $validated = $request->validate([
-            'item_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'quantity' => 'required|integer|min:1',
-            'unit_price' => 'required|numeric|min:0',
+            'price' => 'required|numeric|min:0',
         ]);
 
-        // İlişki üzerinden yeni faturaya kalem ekliyoruz
         $service->items()->create($validated);
 
-        return back(); // Sayfayı yenilemeden veriyi anında React'a gönderir
+        return back()->with('success', 'Kalem başarıyla eklendi.');
+    }
+
+    /**
+     * 6. Servisin (İş emrinin) durumunu günceller. (EKSİK OLAN KISIM EKLENDİ)
+     */
+    public function update(Request $request, string $id)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:Beklemede,İşlemde,Tamamlandı'
+        ]);
+
+        $service = Service::findOrFail($id);
+        $service->update($validated);
+
+        return back()->with('success', 'Servis durumu güncellendi.');
+    }
+
+    public function edit(string $id)
+    {
+        // İleride dolduracağız
+    }
+
+    public function destroy(string $id)
+    {
+        // İleride dolduracağız
     }
 }

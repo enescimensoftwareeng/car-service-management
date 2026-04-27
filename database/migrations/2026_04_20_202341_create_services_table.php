@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('services', function (Blueprint $table) {
             $table->id();
+            // ÖNEMLİ: Bu satırın orada olduğundan emin ol
+            $table->foreignId('vehicle_id')->constrained()->onDelete('cascade');
+            // Sorumlu usta (users tablosuna bağlanıyor)
+            $table->foreignId('technician_id')->constrained('users');
 
-            // --- EKLENEN SÜTUNLAR ---
-            $table->unsignedBigInteger('vehicle_id'); // Hangi araca ait olduğu
-            $table->integer('current_km'); // Servise geldiği anki kilometresi
-            $table->text('complaint'); // Müşterinin şikayeti / İstekler
-            $table->string('status')->default('pending'); // Durum: pending (beklemede), processing (işlemde), completed (tamamlandı)
-            // ----------------------------------
-
+            $table->integer('km_entry');
+            $table->text('complaint');
+            $table->enum('status', ['Beklemede', 'İşlemde', 'Tamamlandı'])->default('Beklemede');
             $table->timestamps();
         });
     }

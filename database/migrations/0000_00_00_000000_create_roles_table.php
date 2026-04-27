@@ -11,13 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vehicles', function (Blueprint $table) {
+        Schema::create('roles', function (Blueprint $table) {
             $table->id();
-            $table->string('plate')->unique();
-            $table->foreignId('brand_id')->constrained();
-            $table->string('model');
-            $table->integer('year');
-            $table->foreignId('owner_id')->constrained('users')->onDelete('cascade');
+            $table->string('name', 50); // <-- Muhtemelen bu satır eksik!
             $table->timestamps();
         });
     }
@@ -27,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('vehicles');
+        Schema::dropIfExists('roles');
     }
 };

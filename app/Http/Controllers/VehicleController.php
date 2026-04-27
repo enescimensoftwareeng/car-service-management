@@ -3,65 +3,48 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vehicle;
+use App\Models\Brand;
+use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Requests\StoreVehicleRequest;
-use App\Http\Requests\UpdateVehicleRequest; // Güncelleme için yeni kapımız
 use Inertia\Inertia;
-use Inertia\Response;
 
 class VehicleController extends Controller
 {
-    public function index(): Response
+    public function index()
     {
-        $vehicles = Vehicle::with(['owner', 'brand'])->latest()->get();
+        $user = auth()->user();
+
+        // EĞER MÜŞTERİ İSE (Role 3), SADECE KENDİ ARAÇLARINI GETİR
+        if ($user->role_id == 3) {
+            $vehicles = Vehicle::with('brand', 'owner')
+                ->where('owner_id', $user->id) // FİLTRE BURADA!
+                ->latest()
+                ->get();
+        }
+        // EĞER USTA VEYA ADMİN İSE (Role 1 veya 2), TÜM ARAÇLARI GETİR
+        else {
+            $vehicles = Vehicle::with('brand', 'owner')->latest()->get();
+        }
 
         return Inertia::render('Vehicles/Index', [
-            'vehicles' => $vehicles
+            'vehicles' => $vehicles,
+            'brands' => Brand::all(),
+            'customers' => User::where('role_id', 3)->get()
         ]);
     }
 
-    public function create(): Response
+    public function store(Request $request)
     {
-        return Inertia::render('Vehicles/Create');
-    }
-
-    public function store(StoreVehicleRequest $request)
-    {
-        $validated = $request->validated();
-        $validated['owner_id'] = auth()->id();
+        $validated = $request->validate([
+            'plate' => 'required|string|max:20|unique:vehicles',
+            'brand_id' => 'required|exists:brands,id',
+            'model' => 'required|string|max:255',
+            'year' => 'required|integer|min:1900|max:'.(date('Y')+1),
+            'owner_id' => 'required|exists:users,id', // Burayı owner_id yaptık
+        ]);
 
         Vehicle::create($validated);
 
-        // Başarı mesajını buraya ekledik!
-        return redirect()->route('vehicles.index')->with('success', 'Araç başarıyla eklendi! 🚀');
-    }
-
-    public function show(Vehicle $vehicle)
-    {
-        // Şimdilik boş kalabilir, araca özel detay sayfası yaparsak kullanacağız.
-    }
-
-    public function edit(Vehicle $vehicle): Response
-    {
-        // Düzenleme formunu aç ve seçilen aracın bilgilerini forma gönder
-        return Inertia::render('Vehicles/Edit', [
-            'vehicle' => $vehicle
-        ]);
-    }
-
-    public function update(UpdateVehicleRequest $request, Vehicle $vehicle)
-    {
-        // Yeni kurallardan geçen verilerle aracı güncelle
-        $vehicle->update($request->validated());
-
-        return redirect()->route('vehicles.index')->with('success', 'Araç başarıyla güncellendi!');
-    }
-
-    public function destroy(Vehicle $vehicle)
-    {
-        // Aracı veritabanından sil
-        $vehicle->delete();
-
-        return redirect()->route('vehicles.index')->with('success', 'Araç sistemden silindi.');
+        return back()->with('success', 'Araç başarıyla kaydedildi.');
     }
 }
