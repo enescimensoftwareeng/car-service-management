@@ -18,16 +18,16 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
 
-            // --- EKLENEN KISIM ---
-            // roles tablosundan önce çalıştığı için constrained() kullanmıyoruz,
-            // sadece sütunları açıyoruz.
+            // --- EKLENMESİ GEREKEN İKİ SATIR ---
             $table->unsignedBigInteger('role_id')->nullable();
             $table->string('phone', 20)->nullable();
-            // ----------------------
+            // ------------------------------------
 
             $table->rememberToken();
             $table->timestamps();
         });
+
+        // ... (alt kısımdaki şifre sıfırlama tablolarına dokunma)
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
