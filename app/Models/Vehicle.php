@@ -28,4 +28,10 @@ class Vehicle extends Model
     {
         return $this->belongsTo(Brand::class);
     }
+
+    // Aracın Servis Kayıtları ile İlişkisi (YENİ EKLENEN KISIM)
+    public function services()
+    {
+        return $this->hasMany(Service::class);
+    }
 }
