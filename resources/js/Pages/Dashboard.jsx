@@ -13,10 +13,11 @@ export default function Dashboard({ auth, stats }) {
         >
             <Head title="Dashboard" />
 
-            <div className="py-10 bg-slate-50/50 min-h-screen">
+            {/* py-10 olan üst boşluğu pt-2 (üstten 2 birim) yaparak lacivert kutuyu yukarı çektik */}
+            <div className="bg-slate-50/50 min-h-screen pt-2 pb-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
-                    {/* Karşılama Alanı (Sadeleştirilmiş) */}
+                    {/* Karşılama Alanı (Hero Section) */}
                     <div className="relative bg-slate-900 rounded-[2.5rem] p-10 shadow-2xl shadow-blue-900/20 overflow-hidden group">
                         <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] group-hover:bg-blue-500/30 transition-all duration-700"></div>
                         <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-600/10 rounded-full blur-[80px]"></div>
