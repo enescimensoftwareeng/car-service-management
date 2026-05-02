@@ -1,159 +1,114 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
+import {
+    Car, Users, Wrench, BadgeCheck,
+    ChevronRight, Zap
+} from 'lucide-react';
 
 export default function Dashboard({ auth, stats }) {
     return (
         <AuthenticatedLayout
             user={auth?.user}
-            header={
-                <h2 className="font-bold text-2xl text-gray-800 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-                    Sistem Özeti & Raporlar
-                </h2>
-            }
+            header={null}
         >
             <Head title="Dashboard" />
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+            <div className="py-10 bg-slate-50/50 min-h-screen">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
-                    {/* Karşılama Alanı */}
-                    <div className="bg-gradient-to-r from-blue-900 to-slate-900 rounded-3xl p-8 shadow-2xl text-white relative overflow-hidden border border-white/10">
-                        <div className="absolute top-[-50px] right-[-50px] w-64 h-64 bg-blue-500 opacity-20 rounded-full blur-3xl pointer-events-none"></div>
+                    {/* Karşılama Alanı (Sadeleştirilmiş) */}
+                    <div className="relative bg-slate-900 rounded-[2.5rem] p-10 shadow-2xl shadow-blue-900/20 overflow-hidden group">
+                        <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] group-hover:bg-blue-500/30 transition-all duration-700"></div>
+                        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-600/10 rounded-full blur-[80px]"></div>
 
-                        <div className="relative z-10">
-                            <h3 className="text-3xl font-extrabold mb-2">
-                                Hoş Geldin, {auth?.user?.name}! 👋
-                            </h3>
-                            <p className="text-blue-200 text-lg max-w-2xl">
-                                Servis yönetim panelindesin. Sistemdeki güncel durumu aşağıdan takip edebilir, hızlı işlemler menüsüyle operasyonları yönetebilirsin.
-                            </p>
+                        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
+                            <div className="text-center md:text-left">
+                                <h3 className="text-4xl font-black text-white mb-4 leading-tight">
+                                    Hoş Geldin, <br />
+                                    <span className="text-blue-400 font-medium italic">{auth?.user?.name}</span>
+                                </h3>
+                                <p className="text-slate-400 text-lg max-w-xl leading-relaxed">
+                                    Servis operasyonları bugün %100 kapasiteyle çalışıyor. <br />
+                                    Aşağıdan güncel araç durumlarını ve iş emirlerini yönetebilirsin.
+                                </p>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl text-center min-w-[120px]">
+                                    <p className="text-blue-400 text-xs font-bold uppercase tracking-wider mb-1">VERİMLİLİK</p>
+                                    <p className="text-white text-3xl font-black">AKTİF</p>
+                                </div>
+                                <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl text-center min-w-[120px]">
+                                    <p className="text-indigo-400 text-xs font-bold uppercase tracking-wider mb-1">AKTİF USTA</p>
+                                    <p className="text-white text-3xl font-black">{stats?.technicians || 0}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* İstatistik Kartları (Grid) */}
+                    {/* İstatistik Kartları */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-                        {/* Kart 1: Toplam Araç */}
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300 group">
-                            <div className="flex justify-between items-start">
+                        {[
+                            { label: 'Sistemdeki Araçlar', val: stats?.vehicles, icon: Car, color: 'blue' },
+                            { label: 'Kayıtlı Müşteri', val: stats?.customers, icon: Users, color: 'indigo' },
+                            { label: 'Günlük İş Emri', val: stats?.daily_services, icon: Wrench, color: 'orange' },
+                            { label: 'Kayıtlı Markalar', val: stats?.brands, icon: BadgeCheck, color: 'purple' },
+                        ].map((stat, idx) => (
+                            <div key={idx} className="bg-white rounded-[2rem] p-7 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className={`p-4 rounded-2xl bg-${stat.color}-50 text-${stat.color}-600 group-hover:scale-110 transition-transform`}>
+                                        <stat.icon className="w-6 h-6" />
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-full uppercase">Canlı Veri</span>
+                                </div>
                                 <div>
-                                    <p className="text-sm font-medium text-gray-500 mb-1">Sistemdeki Araçlar</p>
-                                    <h4 className="text-3xl font-black text-gray-800 group-hover:text-blue-600 transition-colors">{stats?.vehicles || 0}</h4>
-                                </div>
-                                <div className="p-3 bg-blue-50 rounded-xl">
-                                    <span className="text-2xl">🚗</span>
+                                    <p className="text-sm font-semibold text-slate-500 mb-1">{stat.label}</p>
+                                    <h4 className="text-4xl font-black text-slate-900">{stat.val || 0}</h4>
                                 </div>
                             </div>
-                            <div className="mt-4 text-sm text-green-600 font-medium flex items-center">
-                                <span>+ Yeni kayıtlar aktif</span>
-                            </div>
-                        </div>
-
-                        {/* Kart 2: Müşteriler */}
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300 group">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500 mb-1">Kayıtlı Müşteri</p>
-                                    <h4 className="text-3xl font-black text-gray-800 group-hover:text-indigo-600 transition-colors">{stats?.customers || 0}</h4>
-                                </div>
-                                <div className="p-3 bg-indigo-50 rounded-xl">
-                                    <span className="text-2xl">👥</span>
-                                </div>
-                            </div>
-                            <div className="mt-4 text-sm text-blue-500 font-medium">
-                                <span>Sistemi kullananlar</span>
-                            </div>
-                        </div>
-
-                        {/* Kart 3: Günlük Servisler */}
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300 group">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500 mb-1">Bugün Açılan İşler</p>
-                                    <h4 className="text-3xl font-black text-gray-800 group-hover:text-orange-500 transition-colors">{stats?.daily_services || 0}</h4>
-                                </div>
-                                <div className="p-3 bg-orange-50 rounded-xl">
-                                    <span className="text-2xl">🛠️</span>
-                                </div>
-                            </div>
-                            <div className="mt-4 text-sm text-orange-500 font-medium">
-                                <span>Günlük iş emri sayısı</span>
-                            </div>
-                        </div>
-
-                        {/* Kart 4: Desteklenen Markalar */}
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300 group">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500 mb-1">Kayıtlı Markalar</p>
-                                    <h4 className="text-3xl font-black text-gray-800 group-hover:text-purple-600 transition-colors">{stats?.brands || 0}</h4>
-                                </div>
-                                <div className="p-3 bg-purple-50 rounded-xl">
-                                    <span className="text-2xl">🏷️</span>
-                                </div>
-                            </div>
-                            <div className="mt-4 text-sm text-purple-500 font-medium">
-                                <span>Veritabanı tanımlı</span>
-                            </div>
-                        </div>
-
+                        ))}
                     </div>
 
-                    {/* Hızlı İşlemler & Sistem Durumu */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-
-                        {/* Hızlı Kısayollar (2 Kolon kaplar) */}
-                        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
-                                ⚡ Hızlı İşlemler
+                    {/* Hızlı İşlemler */}
+                    <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-8">
+                        <div className="flex justify-between items-center mb-8">
+                            <h3 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                                <Zap className="w-5 h-5 text-orange-500 fill-orange-500" />
+                                Hızlı Operasyonlar
                             </h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <Link href={route('vehicles.index')} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition group">
-                                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                                        ➕
+                            <Link
+                                href={route('services.index')}
+                                className="text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1"
+                            >
+                                Tümünü Gör <ChevronRight className="w-4 h-4" />
+                            </Link>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <Link href={route('vehicles.index')} className="group flex items-center justify-between p-6 rounded-[2rem] bg-slate-50 border border-transparent hover:border-blue-200 hover:bg-blue-50/50 transition-all">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-blue-600 group-hover:rotate-12 transition-transform">
+                                        <Car className="w-7 h-7" />
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-gray-800">Yeni Araç Ekle</h4>
-                                        <p className="text-xs text-gray-500">Sisteme müşteri aracı kaydet</p>
+                                        <h4 className="font-bold text-slate-900 text-lg">Yeni Araç</h4>
+                                        <p className="text-sm text-slate-500">Müşteri kaydı oluştur</p>
                                     </div>
-                                </Link>
+                                </div>
+                                <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-blue-600 transition-colors" />
+                            </Link>
 
-                                <Link href={route('services.index')} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:bg-orange-50 hover:border-orange-200 transition group">
-                                    <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 group-hover:scale-110 transition-transform">
-                                        📝
+                            <Link href={route('services.index')} className="group flex items-center justify-between p-6 rounded-[2rem] bg-slate-50 border border-transparent hover:border-orange-200 hover:bg-orange-50/50 transition-all">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-orange-600 group-hover:rotate-12 transition-transform">
+                                        <Wrench className="w-7 h-7" />
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-gray-800">İş Emri Aç</h4>
-                                        <p className="text-xs text-gray-500">Servise gelen aracı kaydet</p>
+                                        <h4 className="font-bold text-slate-900 text-lg">İş Emri</h4>
+                                        <p className="text-sm text-slate-500">Servis kaydı başlat</p>
                                     </div>
-                                </Link>
-                            </div>
+                                </div>
+                                <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-orange-600 transition-colors" />
+                            </Link>
                         </div>
-
-                        {/* Sistem Bilgisi (1 Kolon kaplar) */}
-                        <div className="bg-slate-900 rounded-2xl shadow-lg border border-slate-800 p-6 text-white relative overflow-hidden">
-                            <div className="absolute -right-10 -bottom-10 opacity-10">
-                                <span className="text-9xl">⚙️</span>
-                            </div>
-                            <h3 className="text-lg font-bold mb-6 text-slate-200">Sistem Bilgisi</h3>
-                            <ul className="space-y-4">
-                                <li className="flex justify-between items-center border-b border-slate-800 pb-2">
-                                    <span className="text-slate-400 text-sm">Veritabanı Durumu</span>
-                                    <span className="flex items-center gap-1 text-green-400 text-sm font-bold">
-                                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Aktif
-                                    </span>
-                                </li>
-                                <li className="flex justify-between items-center border-b border-slate-800 pb-2">
-                                    <span className="text-slate-400 text-sm">Güvenlik (Middleware)</span>
-                                    <span className="text-blue-400 text-sm font-bold">Aktif</span>
-                                </li>
-                                <li className="flex justify-between items-center pb-2">
-                                    <span className="text-slate-400 text-sm">Senkronizasyon</span>
-                                    <span className="text-slate-200 text-sm font-bold">Gerçek Zamanlı</span>
-                                </li>
-                            </ul>
-                        </div>
-
                     </div>
                 </div>
             </div>
