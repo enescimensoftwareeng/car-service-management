@@ -1,9 +1,20 @@
 import { useEffect, useState } from 'react';
-import ApplicationLogo from '@/Components/ApplicationLogo';
-import Dropdown from '@/Components/Dropdown';
+import { Link, usePage } from '@inertiajs/react';
+import {
+    LayoutDashboard,
+    Car,
+    Wrench,
+    UserCircle,
+    LogOut,
+    Settings,
+    Menu,
+    X,
+    ChevronDown,
+    Zap
+} from 'lucide-react';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link, usePage } from '@inertiajs/react';
+import Dropdown from '@/Components/Dropdown';
 
 export default function AuthenticatedLayout({ user, header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -17,202 +28,172 @@ export default function AuthenticatedLayout({ user, header, children }) {
     }, [flash?.success]);
 
     useEffect(() => {
-        if (!toastMessage) {
-            return undefined;
-        }
-
-        const timeout = setTimeout(() => {
-            setToastMessage('');
-        }, 3500);
-
+        if (!toastMessage) return;
+        const timeout = setTimeout(() => setToastMessage(''), 4000);
         return () => clearTimeout(timeout);
     }, [toastMessage]);
 
     return (
-        // Sayfanın tamamını kaplaması ve footer'ın en alta itilmesi için min-h-screen ve flex flex-col kullanıyoruz
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+        <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans text-slate-900">
 
-            {/* ÜST MENÜ (HEADER / NAVBAR) */}
-            <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16">
-                        <div className="flex">
-                            {/* Özel Logo ve Marka İsmi */}
-                            <div className="shrink-0 flex items-center gap-2">
-                                <Link href={route('dashboard')} className="flex items-center gap-2 group">
-                                    <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:bg-blue-700 transition">
-                                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                        </svg>
-                                    </div>
-                                    <span className="font-extrabold text-xl tracking-tight text-slate-800">
+            {/* ÜST NAVIGASYON */}
+            <nav className="sticky top-0 z-[60] bg-white/90 backdrop-blur-xl border-b border-slate-200/60 shadow-sm">
+                <div className="max-w-7xl mx-auto px-6 lg:px-10">
+                    <div className="flex justify-between h-24">
+
+                        {/* Sol Taraf: Logo & Menü */}
+                        <div className="flex items-center gap-16">
+                            <Link href={route('dashboard')} className="flex items-center gap-4 group shrink-0">
+                                <div className="w-12 h-12 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/25 group-hover:rotate-6 transition-all duration-300">
+                                    <Zap className="w-6 h-6 text-white fill-white/20" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="font-black text-2xl leading-none tracking-tighter text-slate-900">
                                         SERVİS<span className="text-blue-600">PRO</span>
                                     </span>
-                                </Link>
-                            </div>
+                                    <span className="text-[11px] font-bold text-slate-400 tracking-[0.25em] uppercase mt-1.5">Management</span>
+                                </div>
+                            </Link>
 
-                            {/* Ana Menü Linkleri */}
-                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink href={route('dashboard')} active={route().current('dashboard')}>
-                                    Yönetim Paneli
+                            <div className="hidden space-x-10 sm:flex">
+                                <NavLink href={route('dashboard')} active={route().current('dashboard')} className="flex items-center gap-3 py-2">
+                                    <LayoutDashboard className="w-5 h-5" />
+                                    <span className="font-semibold text-[15px]">Yönetim Paneli</span>
                                 </NavLink>
-                                <NavLink href={route('vehicles.index')} active={route().current('vehicles.index')}>
-                                    Araç Yönetimi
+                                <NavLink href={route('vehicles.index')} active={route().current('vehicles.index')} className="flex items-center gap-3 py-2">
+                                    <Car className="w-5 h-5" />
+                                    <span className="font-semibold text-[15px]">Araçlar</span>
                                 </NavLink>
-                                <NavLink href={route('services.index')} active={route().current('services.*')}>
-                                    Servis Kayıtları
+                                <NavLink href={route('services.index')} active={route().current('services.*')} className="flex items-center gap-3 py-2">
+                                    <Wrench className="w-5 h-5" />
+                                    <span className="font-semibold text-[15px]">Servis Kayıtları</span>
                                 </NavLink>
                             </div>
                         </div>
 
-                        {/* Sağ Taraf - Kullanıcı Menüsü */}
-                        <div className="hidden sm:flex sm:items-center sm:ms-6">
-                            {/* Yetki Rozeti (Role 1: Admin, Role 2: Usta, Role 3: Müşteri) */}
-                            <span className="mr-3 px-3 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full border border-slate-200">
-                                {user?.role_id === 1 ? 'Sistem Yöneticisi' : user?.role_id === 2 ? 'Servis Ustası' : 'Müşteri'}
-                            </span>
+                        {/* Sağ Taraf: Profil & Role Bölümü */}
+                        <div className="hidden sm:flex sm:items-center">
+                            <div className="flex items-center gap-8 pl-10 border-l border-slate-100">
 
-                            <div className="ms-3 relative">
+                                {/* İsim ve Rol Alanı */}
+                                <div className="flex flex-col items-end shrink-0">
+                                    <span className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-1.5 opacity-90 leading-none">
+                                        {user?.role_id === 1 ? 'YÖNETİCİ' : user?.role_id === 2 ? 'USTA' : 'MÜŞTERİ'}
+                                    </span>
+                                    <span className="text-[16px] font-extrabold text-slate-800 tracking-tight leading-none">
+                                        {user?.name}
+                                    </span>
+                                </div>
+
+                                {/* Açılır Menü (Dropdown) */}
                                 <Dropdown>
                                     <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-bold rounded-md text-gray-700 bg-white hover:text-blue-600 focus:outline-none transition ease-in-out duration-150"
-                                            >
-                                                {user?.name}
-                                                <svg className="ms-2 -me-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                                                </svg>
-                                            </button>
-                                        </span>
+                                        <button className="relative flex items-center gap-3 p-1.5 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 group">
+                                            {/* Profil İkon Kutusu */}
+                                            <div className="w-11 h-11 rounded-xl bg-slate-50 flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+                                                <UserCircle className="w-7 h-7 text-slate-400 group-hover:text-blue-600 transition-colors" />
+                                            </div>
+
+                                            {/* Belirginleştirici Ok (Chevron) */}
+                                            <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-all group-hover:translate-y-0.5 mr-2" />
+
+                                            {/* Durum Noktası */}
+                                            <div className="absolute top-1 left-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                                        </button>
                                     </Dropdown.Trigger>
 
-                                    <Dropdown.Content>
-                                        <Dropdown.Link href={route('profile.edit')}>Profil Ayarları</Dropdown.Link>
-                                        <Dropdown.Link href={route('logout')} method="post" as="button" className="text-red-600 font-medium">
-                                            Güvenli Çıkış
-                                        </Dropdown.Link>
+                                    <Dropdown.Content align="right" width="64" contentClasses="py-0 bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden mt-2">
+                                        {/* Üst Bilgi Paneli */}
+                                        <div className="px-6 py-5 bg-slate-50/50 border-b border-slate-100">
+                                            <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em] mb-1">Hesap Ayarları</p>
+                                            <p className="text-sm font-bold text-slate-700 truncate">{user?.email}</p>
+                                        </div>
+
+                                        {/* Menü Linkleri */}
+                                        <div className="p-3">
+                                            <Dropdown.Link
+                                                href={route('profile.edit')}
+                                                className="flex items-center gap-4 px-4 py-3.5 text-slate-700 hover:bg-blue-50 hover:text-blue-700 rounded-2xl transition-all duration-200 group"
+                                            >
+                                                <div className="p-2 bg-white rounded-xl shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                                    <Settings className="w-4 h-4" />
+                                                </div>
+                                                <span className="font-bold text-[14px]">Profil Ayarları</span>
+                                            </Dropdown.Link>
+
+                                            <div className="h-px bg-slate-100/60 my-2 mx-4"></div>
+
+                                            <Dropdown.Link
+                                                href={route('logout')}
+                                                method="post"
+                                                as="button"
+                                                className="w-full flex items-center gap-4 px-4 py-3.5 text-red-500 hover:bg-red-50 rounded-2xl transition-all duration-200 group text-left"
+                                            >
+                                                <div className="p-2 bg-white rounded-xl shadow-sm group-hover:bg-red-600 group-hover:text-white transition-colors">
+                                                    <LogOut className="w-4 h-4" />
+                                                </div>
+                                                <span className="font-bold text-[14px]">Güvenli Çıkış</span>
+                                            </Dropdown.Link>
+                                        </div>
                                     </Dropdown.Content>
                                 </Dropdown>
                             </div>
                         </div>
 
                         {/* Mobil Menü Butonu */}
-                        <div className="-me-2 flex items-center sm:hidden">
+                        <div className="flex items-center sm:hidden">
                             <button
-                                onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
-                                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
+                                onClick={() => setShowingNavigationDropdown(!showingNavigationDropdown)}
+                                className="p-3 rounded-2xl bg-slate-50 text-slate-500 hover:bg-slate-100 transition"
                             >
-                                <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                    <path
-                                        className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
+                                {showingNavigationDropdown ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                             </button>
                         </div>
                     </div>
                 </div>
 
                 {/* Mobil Menü İçeriği */}
-                <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
-                    <div className="pt-2 pb-3 space-y-1">
-                        <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
-                            Yönetim Paneli
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('vehicles.index')} active={route().current('vehicles.index')}>
-                            Araç Yönetimi
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('services.index')} active={route().current('services.*')}>
-                            Servis Kayıtları
-                        </ResponsiveNavLink>
-                    </div>
-
-                    <div className="pt-4 pb-1 border-t border-gray-200">
-                        <div className="px-4">
-                            <div className="font-medium text-base text-gray-800">{user?.name}</div>
-                            <div className="font-medium text-sm text-gray-500">{user?.email}</div>
-                        </div>
-
-                        <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>Profil Ayarları</ResponsiveNavLink>
-                            <ResponsiveNavLink method="post" href={route('logout')} as="button">
-                                Çıkış Yap
-                            </ResponsiveNavLink>
-                        </div>
+                <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden bg-white border-b border-slate-100'}>
+                    <div className="pt-2 pb-3 space-y-1 px-4">
+                        <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>Yönetim Paneli</ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('vehicles.index')} active={route().current('vehicles.index')}>Araç Yönetimi</ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('services.index')} active={route().current('services.*')}>Servis Kayıtları</ResponsiveNavLink>
                     </div>
                 </div>
             </nav>
 
-            {/* SAYFA BAŞLIĞI (Varsa) */}
-            {header && (
-                <header className="bg-white shadow-sm border-b border-gray-100">
-                    <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">{header}</div>
-                </header>
-            )}
-
-            {/* ANA İÇERİK (Dashboard, Araçlar vb. buraya gelir) */}
-            <main className="flex-1">
+            {/* ANA İÇERİK */}
+            <main className="flex-1 w-full max-w-7xl mx-auto px-8 lg:px-12 py-16">
                 {children}
             </main>
 
-            {toastMessage && (
-                <div className="fixed right-5 top-20 z-[70] w-full max-w-sm">
-                    <div className="rounded-xl border border-emerald-200 bg-white p-4 shadow-lg">
-                        <div className="flex items-start gap-3">
-                            <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-                                <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-7.2 7.2a1 1 0 01-1.415 0l-3-3a1 1 0 011.415-1.42l2.292 2.29 6.493-6.49a1 1 0 011.415 0z" clipRule="evenodd" />
-                                </svg>
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-sm font-semibold text-slate-800">Islem Basarili</p>
-                                <p className="mt-0.5 text-sm text-slate-600">{toastMessage}</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setToastMessage('')}
-                                className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                            >
-                                <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* ALT BİLGİ (FOOTER) - Senin İmzan! */}
-            <footer className="bg-white border-t border-gray-200 mt-auto">
-                <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    <div className="md:flex md:items-center md:justify-between">
-                        <div className="flex justify-center md:justify-start mb-4 md:mb-0 space-x-6 md:order-2">
-                            <span className="text-sm text-gray-500 flex items-center gap-1">
-                                <span className="w-2 h-2 rounded-full bg-green-500"></span> Sistem Aktif
+            {/* FOOTER */}
+            <footer className="bg-white border-t border-slate-200 py-12 mt-24">
+                <div className="max-w-7xl mx-auto px-8 lg:px-12 text-center md:text-left">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-10">
+                        <div className="flex items-center gap-6">
+                            <span className="font-black text-xl tracking-tighter">
+                                SERVİS<span className="text-blue-600">PRO</span>
                             </span>
-                            <span className="text-sm text-gray-500">v1.0.0</span>
-                        </div>
-                        <div className="mt-8 md:mt-0 md:order-1 text-center md:text-left">
-                            <p className="text-sm text-gray-500 font-medium">
-                                &copy; {new Date().getFullYear()} Araba Servis Takip Sistemi.
+                            <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
+                            <p className="text-sm text-slate-500 font-medium">
+                                &copy; {new Date().getFullYear()} Tüm Hakları Saklıdır.
                             </p>
+                        </div>
+
+                        <div className="flex items-center gap-8">
+                            <div className="flex items-center gap-3 px-5 py-2.5 bg-green-50 rounded-full border border-green-100 shadow-sm">
+                                <div className="relative flex h-2 w-2">
+                                    <div className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></div>
+                                    <div className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></div>
+                                </div>
+                                <span className="text-xs font-black text-green-700 uppercase tracking-[0.1em]">Sistem Çevrimiçi</span>
+                            </div>
+                            <span className="text-xs font-black text-slate-300 tracking-[0.4em] hidden sm:block uppercase">ELAZIĞ</span>
                         </div>
                     </div>
                 </div>
             </footer>
-
         </div>
     );
 }
