@@ -1,170 +1,166 @@
+import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Index({ auth, vehicles = [], brands = [], customers = [] }) {
-    // ÖNEMLİ: user_id olan her yeri owner_id yaptık
-    const { data, setData, post, processing, reset, errors } = useForm({
-        plate: '',
-        brand_id: '',
-        model: '',
-        year: new Date().getFullYear(),
-        owner_id: '', // Modelimizdeki isimle eşitlendi
-    });
+export default function Index({ auth, vehicles = [] }) {
+    const { delete: destroy, processing } = useForm({});
+    const [vehicleToDelete, setVehicleToDelete] = useState(null);
 
-    const submit = (e) => {
-        e.preventDefault();
-        post(route('vehicles.store'), {
-            onSuccess: () => reset(),
+    const openDeleteModal = (vehicle) => {
+        setVehicleToDelete(vehicle);
+    };
+
+    const closeDeleteModal = () => {
+        setVehicleToDelete(null);
+    };
+
+    const confirmDelete = () => {
+        if (!vehicleToDelete) {
+            return;
+        }
+
+        destroy(route('vehicles.destroy', vehicleToDelete.id), {
+            onFinish: () => closeDeleteModal(),
         });
     };
 
     return (
         <AuthenticatedLayout
             user={auth?.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Araç Yönetimi</h2>}
+            header={<h2 className="text-xl font-semibold leading-tight text-slate-800">Arac Yonetimi</h2>}
         >
             <Head title="Araçlar" />
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-
-                    {/* SOL TARAF: Yeni Araç Ekleme Formu */}
-                    <div className="bg-white p-6 shadow-sm sm:rounded-lg h-fit border-t-4 border-blue-600">
-                        <h3 className="text-lg font-bold mb-4 border-b pb-2 text-gray-700">Yeni Araç Kaydı</h3>
-                        <form onSubmit={submit} className="space-y-4">
+            <div className="py-10">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                        <div className="flex flex-col gap-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 uppercase">Plaka</label>
-                                <input
-                                    type="text"
-                                    value={data.plate}
-                                    onChange={e => setData('plate', e.target.value.toUpperCase())}
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="34 ABC 123"
-                                />
-                                {errors.plate && <div className="text-red-500 text-xs mt-1">{errors.plate}</div>}
+                                <h3 className="text-lg font-semibold text-slate-900">Sistemdeki Araclar</h3>
+                                <p className="mt-1 text-sm text-slate-500">Kayitli araclari goruntuleyin, guncelleyin veya silin.</p>
                             </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 uppercase text-[10px]">Marka</label>
-                                    <select
-                                        value={data.brand_id}
-                                        onChange={e => setData('brand_id', e.target.value)}
-                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    >
-                                        <option value="">Seçiniz</option>
-                                        {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                                    </select>
-                                    {errors.brand_id && <div className="text-red-500 text-xs mt-1">{errors.brand_id}</div>}
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 uppercase text-[10px]">Model Yılı</label>
-                                    <input
-                                        type="number"
-                                        value={data.year}
-                                        onChange={e => setData('year', e.target.value)}
-                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    />
-                                    {errors.year && <div className="text-red-500 text-xs mt-1">{errors.year}</div>}
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 uppercase text-[10px]">Model İsmi</label>
-                                <input
-                                    type="text"
-                                    value={data.model}
-                                    onChange={e => setData('model', e.target.value)}
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="Örn: Passat B8"
-                                />
-                                {errors.model && <div className="text-red-500 text-xs mt-1">{errors.model}</div>}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 uppercase text-[10px]">Araç Sahibi (Müşteri)</label>
-                                <select
-                                    value={data.owner_id} // owner_id olarak güncellendi
-                                    onChange={e => setData('owner_id', e.target.value)}
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            <div className="flex items-center gap-3">
+                                <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+                                    Toplam: {vehicles.length}
+                                </span>
+                                <Link
+                                    href={route('vehicles.create')}
+                                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
                                 >
-                                    <option value="">Müşteri Seçiniz</option>
-                                    {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                </select>
-                                {errors.owner_id && <div className="text-red-500 text-xs mt-1">{errors.owner_id}</div>}
+                                    Yeni Arac Ekle
+                                </Link>
                             </div>
-
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200"
-                            >
-                                {processing ? 'Kaydediliyor...' : 'Aracı Sisteme Kaydet'}
-                            </button>
-                        </form>
-                    </div>
-
-                    {/* SAĞ TARAF: Kayıtlı Araçlar Listesi */}
-                    <div className="md:col-span-2 bg-white p-6 shadow-sm sm:rounded-lg">
-                        <div className="flex justify-between items-center mb-4 border-b pb-2">
-                            <h3 className="text-lg font-bold text-gray-700">Sistemdeki Araçlar</h3>
-                            <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
-                                Toplam: {vehicles.length}
-                            </span>
                         </div>
 
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
+                        <div className="overflow-x-auto px-6 py-6 sm:px-8">
+                            <table className="min-w-full text-left text-sm">
                                 <thead>
-                                <tr className="text-gray-400 text-xs uppercase tracking-wider border-b">
-                                    <th className="pb-3">Plaka</th>
-                                    <th className="pb-3">Marka / Model</th>
-                                    <th className="pb-3 text-center">Yıl</th>
-                                    <th className="pb-3">Sahibi</th>
-                                    <th className="pb-3 text-right">İşlem</th>
-                                </tr>
+                                    <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
+                                        <th className="pb-3 font-semibold">Plaka</th>
+                                        <th className="pb-3 font-semibold">Marka / Model</th>
+                                        <th className="pb-3 text-center font-semibold">Yil</th>
+                                        <th className="pb-3 font-semibold">Sahibi</th>
+                                        <th className="pb-3 text-right font-semibold">Islemler</th>
+                                    </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                {vehicles.map(v => (
-                                    <tr key={v.id} className="hover:bg-blue-50/50 transition group">
-                                        <td className="py-4 font-black text-gray-900">
-                                                <span className="border-2 border-gray-800 px-2 py-1 rounded bg-white shadow-sm italic">
+                                <tbody className="divide-y divide-slate-100">
+                                    {vehicles.map((v) => (
+                                        <tr key={v.id} className="transition hover:bg-slate-50">
+                                            <td className="py-4 font-semibold text-slate-800">
+                                                <span className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold">
                                                     {v.plate}
                                                 </span>
-                                        </td>
-                                        <td className="py-4">
-                                            <div className="font-bold text-gray-800">{v.brand?.name}</div>
-                                            <div className="text-xs text-gray-500">{v.model}</div>
-                                        </td>
-                                        <td className="py-4 text-center text-sm font-medium text-gray-600">{v.year}</td>
-                                        <td className="py-4">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-600">
-                                                    {v.owner?.name?.charAt(0)}
+                                            </td>
+                                            <td className="py-4">
+                                                <div className="font-medium text-slate-800">{v.brand?.name ?? '-'}</div>
+                                                <div className="text-xs text-slate-500">{v.model ?? '-'}</div>
+                                            </td>
+                                            <td className="py-4 text-center text-slate-600">{v.year ?? '-'}</td>
+                                            <td className="py-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-200 text-[10px] font-bold text-slate-600">
+                                                        {v.owner?.name?.charAt(0) ?? '?'}
+                                                    </div>
+                                                    <span className="font-medium text-slate-700">{v.owner?.name ?? '-'}</span>
                                                 </div>
-                                                <span className="text-sm font-semibold text-gray-700">{v.owner?.name}</span>
-                                            </div>
-                                        </td>
-                                        <td className="py-4 text-right">
-                                            <button className="text-red-400 hover:text-red-600 font-medium text-xs transition p-2 hover:bg-red-50 rounded-lg">
-                                                Sil
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                            </td>
+                                            <td className="py-4">
+                                                <div className="flex justify-end gap-2">
+                                                    <Link
+                                                        href={route('vehicles.edit', v.id)}
+                                                        className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-100"
+                                                    >
+                                                        Guncelle
+                                                    </Link>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openDeleteModal(v)}
+                                                        disabled={processing}
+                                                        className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                                    >
+                                                        Sil
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
+
                             {vehicles.length === 0 && (
-                                <div className="text-center py-12">
-                                    <div className="text-4xl mb-2 text-gray-200">🚗</div>
-                                    <p className="text-gray-400 font-medium italic text-sm">Henüz hiç araç kaydedilmemiş.</p>
+                                <div className="py-14 text-center">
+                                    <div className="mb-3 text-4xl text-slate-300">🚗</div>
+                                    <p className="text-sm font-medium italic text-slate-500">Henuz kayitli arac bulunmuyor.</p>
+                                    <Link
+                                        href={route('vehicles.create')}
+                                        className="mt-4 inline-flex rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                                    >
+                                        Ilk Araci Ekle
+                                    </Link>
                                 </div>
                             )}
                         </div>
                     </div>
-
                 </div>
             </div>
+
+            {vehicleToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 px-4">
+                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                        <div className="mb-4 flex items-start gap-3">
+                            <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-rose-100 text-rose-600">
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v3m0 4h.01M4.93 19h14.14c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.2 16c-.77 1.33.19 3 1.73 3z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 className="text-base font-semibold text-slate-900">Araci silmek istiyor musunuz?</h4>
+                                <p className="mt-1 text-sm text-slate-600">
+                                    <span className="font-semibold text-slate-800">{vehicleToDelete.plate}</span> plakali kayit kalici olarak silinecek.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={closeDeleteModal}
+                                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+                            >
+                                Vazgec
+                            </button>
+                            <button
+                                type="button"
+                                onClick={confirmDelete}
+                                disabled={processing}
+                                className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {processing ? 'Siliniyor...' : 'Evet, Sil'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }

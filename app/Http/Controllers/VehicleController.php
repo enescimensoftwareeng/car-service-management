@@ -10,6 +10,14 @@ use Inertia\Inertia;
 
 class VehicleController extends Controller
 {
+    public function create()
+    {
+        return Inertia::render('Vehicles/Create', [
+            'brands' => Brand::all(),
+            'customers' => User::where('role_id', 3)->get(),
+        ]);
+    }
+
     public function index()
     {
         $user = auth()->user();
@@ -39,12 +47,43 @@ class VehicleController extends Controller
             'plate' => 'required|string|max:20|unique:vehicles',
             'brand_id' => 'required|exists:brands,id',
             'model' => 'required|string|max:255',
-            'year' => 'required|integer|min:1900|max:'.(date('Y')+1),
-            'owner_id' => 'required|exists:users,id', // Burayı owner_id yaptık
+            'year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
+            'owner_id' => 'required|exists:users,id',
         ]);
 
         Vehicle::create($validated);
 
-        return back()->with('success', 'Araç başarıyla kaydedildi.');
+        return redirect()->route('vehicles.index')->with('success', 'Arac basariyla kaydedildi.');
+    }
+
+    public function edit(Vehicle $vehicle)
+    {
+        return Inertia::render('Vehicles/Edit', [
+            'vehicle' => $vehicle,
+        ]);
+    }
+
+    public function show(Vehicle $vehicle)
+    {
+        return redirect()->route('vehicles.edit', $vehicle);
+    }
+
+    public function update(Request $request, Vehicle $vehicle)
+    {
+        $validated = $request->validate([
+            'plate' => 'required|string|max:20|unique:vehicles,plate,' . $vehicle->id,
+            'model' => 'required|string|max:255',
+        ]);
+
+        $vehicle->update($validated);
+
+        return redirect()->route('vehicles.index')->with('success', 'Arac bilgileri guncellendi.');
+    }
+
+    public function destroy(Vehicle $vehicle)
+    {
+        $vehicle->delete();
+
+        return redirect()->route('vehicles.index')->with('success', 'Arac kaydi silindi.');
     }
 }

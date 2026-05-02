@@ -16,66 +16,77 @@ export default function Edit({ auth, vehicle }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Araç Düzenle: {vehicle.plate}</h2>}
+            header={<h2 className="text-xl font-semibold leading-tight text-slate-800">Arac Duzenle: {vehicle.plate}</h2>}
         >
             <Head title="Araç Düzenle" />
 
-            <div className="py-12">
-                <div className="max-w-2xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-8">
+            <div className="py-10">
+                <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                        <div className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-6 py-5 sm:px-8">
+                            <h3 className="text-lg font-semibold text-slate-900">Arac Kaydini Guncelle</h3>
+                            <p className="mt-1 text-sm text-slate-500">
+                                {vehicle.plate} plakali aracin bilgilerini guncelleyebilirsiniz.
+                            </p>
+                        </div>
 
-                        <form onSubmit={submit} className="space-y-6">
+                        <form onSubmit={submit} className="space-y-6 px-6 py-7 sm:px-8">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Araç Plakası</label>
+                                <label className="text-sm font-medium text-slate-700">Arac Plakasi *</label>
                                 <input
                                     type="text"
                                     value={data.plate}
                                     onChange={(e) => setData('plate', e.target.value.toUpperCase())}
-                                    maxLength={20} /* UX: Maksimum 20 karakter sınırı */
-                                    className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm uppercase"
+                                    maxLength={20}
+                                    className="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm uppercase text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                                    placeholder="34 ABC 123"
                                 />
-                                {errors.plate && <div className="text-red-500 text-sm mt-1">{errors.plate}</div>}
+                                {errors.plate && <div className="mt-1.5 text-xs text-rose-600">{errors.plate}</div>}
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Model (Yıl/Paket)</label>
+                                <label className="text-sm font-medium text-slate-700">Model (Yil/Paket) *</label>
                                 <input
                                     type="text"
                                     value={data.model}
                                     onChange={(e) => setData('model', e.target.value)}
-                                    maxLength={100} /* UX: Maksimum 100 karakter sınırı */
-                                    className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                    maxLength={100}
+                                    className="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                                    placeholder="Passat 1.5 TSI Business"
                                 />
-                                {errors.model && <div className="text-red-500 text-sm mt-1">{errors.model}</div>}
+                                {errors.model && <div className="mt-1.5 text-xs text-rose-600">{errors.model}</div>}
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Şasi Numarası</label>
+                                <label className="text-sm font-medium text-slate-700">Sasi Numarasi</label>
                                 <input
                                     type="text"
                                     value={data.chassis_no}
                                     onChange={(e) => setData('chassis_no', e.target.value.toUpperCase())}
-                                    maxLength={17} /* UX: Şasi numarası 17 karakterden uzun olamaz */
-                                    minLength={17} /* UX: Şasi numarası 17 karakterden kısa olamaz */
-                                    className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm uppercase"
+                                    maxLength={17}
+                                    minLength={17}
+                                    className="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm uppercase text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                                    placeholder="17 karakter VIN"
                                 />
-                                {errors.chassis_no && <div className="text-red-500 text-sm mt-1">{errors.chassis_no}</div>}
+                                {errors.chassis_no && <div className="mt-1.5 text-xs text-rose-600">{errors.chassis_no}</div>}
                             </div>
 
-                            <div className="flex items-center justify-end mt-4 gap-4">
-                                <Link href={route('vehicles.index')} className="text-gray-600 hover:text-gray-900">
-                                    İptal
+                            <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-2">
+                                <Link
+                                    href={route('vehicles.index')}
+                                    className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-800"
+                                >
+                                    Iptal
                                 </Link>
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition disabled:opacity-50"
+                                    className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
-                                    Değişiklikleri Kaydet
+                                    {processing ? 'Kaydediliyor...' : 'Degisiklikleri Kaydet'}
                                 </button>
                             </div>
                         </form>
-
                     </div>
                 </div>
             </div>
