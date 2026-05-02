@@ -10,7 +10,7 @@ use App\Models\Service;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\ServiceController;
+
 
 // ANA SAYFA
 Route::get('/', function () {
