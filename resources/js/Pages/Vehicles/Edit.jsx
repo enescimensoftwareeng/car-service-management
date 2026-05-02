@@ -2,7 +2,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, Link } from '@inertiajs/react';
 
 export default function Edit({ auth, vehicle }) {
-    // data nesnesini doğrudan veritabanından gelen aracın bilgileriyle dolduruyoruz
     const { data, setData, put, processing, errors } = useForm({
         plate: vehicle.plate || '',
         model: vehicle.model || '',
@@ -11,7 +10,6 @@ export default function Edit({ auth, vehicle }) {
 
     const submit = (e) => {
         e.preventDefault();
-        // Güncelleme işleminde POST yerine PUT kullanılır!
         put(route('vehicles.update', vehicle.id));
     };
 
@@ -33,6 +31,7 @@ export default function Edit({ auth, vehicle }) {
                                     type="text"
                                     value={data.plate}
                                     onChange={(e) => setData('plate', e.target.value.toUpperCase())}
+                                    maxLength={20} /* UX: Maksimum 20 karakter sınırı */
                                     className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm uppercase"
                                 />
                                 {errors.plate && <div className="text-red-500 text-sm mt-1">{errors.plate}</div>}
@@ -44,6 +43,7 @@ export default function Edit({ auth, vehicle }) {
                                     type="text"
                                     value={data.model}
                                     onChange={(e) => setData('model', e.target.value)}
+                                    maxLength={100} /* UX: Maksimum 100 karakter sınırı */
                                     className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
                                 />
                                 {errors.model && <div className="text-red-500 text-sm mt-1">{errors.model}</div>}
@@ -55,7 +55,9 @@ export default function Edit({ auth, vehicle }) {
                                     type="text"
                                     value={data.chassis_no}
                                     onChange={(e) => setData('chassis_no', e.target.value.toUpperCase())}
-                                    className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                    maxLength={17} /* UX: Şasi numarası 17 karakterden uzun olamaz */
+                                    minLength={17} /* UX: Şasi numarası 17 karakterden kısa olamaz */
+                                    className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm uppercase"
                                 />
                                 {errors.chassis_no && <div className="text-red-500 text-sm mt-1">{errors.chassis_no}</div>}
                             </div>
