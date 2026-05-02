@@ -1,12 +1,32 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 
 export default function AuthenticatedLayout({ user, header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const { flash } = usePage().props;
+    const [toastMessage, setToastMessage] = useState('');
+
+    useEffect(() => {
+        if (flash?.success) {
+            setToastMessage(flash.success);
+        }
+    }, [flash?.success]);
+
+    useEffect(() => {
+        if (!toastMessage) {
+            return undefined;
+        }
+
+        const timeout = setTimeout(() => {
+            setToastMessage('');
+        }, 3500);
+
+        return () => clearTimeout(timeout);
+    }, [toastMessage]);
 
     return (
         // Sayfanın tamamını kaplaması ve footer'ın en alta itilmesi için min-h-screen ve flex flex-col kullanıyoruz
@@ -146,6 +166,33 @@ export default function AuthenticatedLayout({ user, header, children }) {
             <main className="flex-1">
                 {children}
             </main>
+
+            {toastMessage && (
+                <div className="fixed right-5 top-20 z-[70] w-full max-w-sm">
+                    <div className="rounded-xl border border-emerald-200 bg-white p-4 shadow-lg">
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                                <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-7.2 7.2a1 1 0 01-1.415 0l-3-3a1 1 0 011.415-1.42l2.292 2.29 6.493-6.49a1 1 0 011.415 0z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-sm font-semibold text-slate-800">Islem Basarili</p>
+                                <p className="mt-0.5 text-sm text-slate-600">{toastMessage}</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setToastMessage('')}
+                                className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                            >
+                                <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ALT BİLGİ (FOOTER) - Senin İmzan! */}
             <footer className="bg-white border-t border-gray-200 mt-auto">

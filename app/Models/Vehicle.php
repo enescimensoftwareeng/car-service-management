@@ -15,7 +15,6 @@ class Vehicle extends Model
         'brand_id',
         'model',
         'year',
-        'chassis_no',
         'owner_id'
     ];
 
