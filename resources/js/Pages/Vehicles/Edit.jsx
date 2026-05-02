@@ -36,11 +36,22 @@ export default function Edit({ auth, vehicle }) {
                                 <input
                                     type="text"
                                     value={data.plate}
-                                    onChange={(e) => setData('plate', e.target.value.toUpperCase())}
-                                    maxLength={20}
+                                    onChange={(e) =>
+                                        setData(
+                                            'plate',
+                                            e.target.value
+                                                .toUpperCase()
+                                                .replace(/[^0-9A-Z\s]/g, '')
+                                                .replace(/\s+/g, ' ')
+                                                .slice(0, 11),
+                                        )
+                                    }
+                                    maxLength={11}
+                                    pattern="\d{2}\s?[A-Z]{1,3}\s?\d{2,4}"
                                     className="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm uppercase text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                                     placeholder="34 ABC 123"
                                 />
+                                <p className="mt-1 text-xs text-slate-500">Format: 34 ABC 1234</p>
                                 {errors.plate && <div className="mt-1.5 text-xs text-rose-600">{errors.plate}</div>}
                             </div>
 
@@ -62,7 +73,9 @@ export default function Edit({ auth, vehicle }) {
                                 <input
                                     type="text"
                                     value={data.chassis_no}
-                                    onChange={(e) => setData('chassis_no', e.target.value.toUpperCase())}
+                                    onChange={(e) =>
+                                        setData('chassis_no', e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 17))
+                                    }
                                     maxLength={17}
                                     minLength={17}
                                     className="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm uppercase text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"

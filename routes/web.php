@@ -11,6 +11,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+
 // ANA SAYFA
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -54,3 +55,19 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+
+
+Route::middleware('auth')->group(function () {
+    Route::resource('vehicles', VehicleController::class);
+    Route::resource('services', ServiceController::class); // YENİ EKLENEN SATIR
+});
+
+// Existing routes...
+Route::middleware('auth')->group(function () {
+    Route::resource('vehicles', VehicleController::class);
+    Route::resource('services', ServiceController::class);
+
+    // YENİ EKLENEN SATIR: Parça ekleme rotası
+    Route::post('services/{service}/items', [ServiceController::class, 'storeItem'])->name('services.items.store');
+});
