@@ -1,8 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
-import { Car, Calendar, ChevronRight, ShieldCheck, Activity, Clock, CheckCircle2, History } from 'lucide-react';
+import { Car, Calendar, ChevronRight, ShieldCheck, Activity, Clock, CheckCircle2, History, Receipt } from 'lucide-react';
 
-// pastServices prop'unu ekledik
 export default function CustomerDashboard({ auth, vehicles = [], activeServices = [], pastServices = [] }) {
 
     // Tarih formatlamak için yardımcı fonksiyon
@@ -10,6 +9,12 @@ export default function CustomerDashboard({ auth, vehicles = [], activeServices 
         if (!dateString) return 'Tarih Yok';
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         return new Date(dateString).toLocaleDateString('tr-TR', options);
+    };
+
+    // Fatura genel toplamını hesaplayan yardımcı fonksiyon
+    const calculateTotal = (items) => {
+        if (!items || items.length === 0) return 0;
+        return items.reduce((acc, item) => acc + (item.quantity * parseFloat(item.unit_price)), 0);
     };
 
     return (
@@ -108,6 +113,39 @@ export default function CustomerDashboard({ auth, vehicles = [], activeServices 
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            {/* YENİ: FATURA DETAYLARI ALANI */}
+                                            <div className="mt-8 pt-6 border-t border-slate-200">
+                                                <h6 className="text-sm font-black text-slate-800 flex items-center gap-2 mb-4">
+                                                    <Receipt className="w-4 h-4 text-blue-500" /> Fatura Detayları
+                                                </h6>
+
+                                                {service.items && service.items.length > 0 ? (
+                                                    <div className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm">
+                                                        <div className="divide-y divide-slate-100">
+                                                            {service.items.map(item => (
+                                                                <div key={item.id} className="flex justify-between items-center p-4 text-sm hover:bg-slate-50 transition-colors">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <span className="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">{item.quantity}</span>
+                                                                        <span className="text-slate-700 font-medium">{item.item_name}</span>
+                                                                    </div>
+                                                                    <span className="font-bold text-slate-800">{(item.quantity * parseFloat(item.unit_price)).toLocaleString('tr-TR')} ₺</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        <div className="bg-slate-800 p-4 flex justify-between items-center">
+                                                            <span className="text-xs font-black text-slate-300 uppercase tracking-widest">Genel Toplam</span>
+                                                            <span className="text-lg font-black text-emerald-400">{calculateTotal(service.items).toLocaleString('tr-TR')} ₺</span>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="bg-slate-50 rounded-xl p-5 text-center border border-dashed border-slate-200">
+                                                        <Receipt className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                                                        <p className="text-sm text-slate-500 font-medium">Usta henüz bu iş emrine parça veya işçilik eklemedi.</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
                                         </div>
                                     ))
                                 ) : (
@@ -118,7 +156,7 @@ export default function CustomerDashboard({ auth, vehicles = [], activeServices 
                                 )}
                             </div>
 
-                            {/* GEÇMİŞ SERVİS KAYITLARI (YENİ EKLENDİ) */}
+                            {/* GEÇMİŞ SERVİS KAYITLARI */}
                             <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
                                 <h4 className="text-xl font-black text-slate-800 flex items-center gap-3 mb-6">
                                     <History className="w-6 h-6 text-blue-500" />
@@ -141,8 +179,13 @@ export default function CustomerDashboard({ auth, vehicles = [], activeServices 
                                                     <h5 className="font-bold text-slate-800 group-hover:text-blue-700 transition-colors">
                                                         {service.description || 'Genel Servis İşlemi'}
                                                     </h5>
+
+                                                    {/* YENİ: GEÇMİŞ KAYITLAR İÇİN TOPLAM TUTAR */}
+                                                    <p className="text-sm font-bold text-slate-500 mt-1 flex items-center gap-1">
+                                                        <Receipt className="w-3 h-3" /> Toplam Tutar: <span className="text-slate-700">{calculateTotal(service.items).toLocaleString('tr-TR')} ₺</span>
+                                                    </p>
                                                 </div>
-                                                <div className="mt-4 sm:mt-0 px-4 py-2 bg-emerald-50 text-emerald-600 font-bold rounded-xl border border-emerald-100 text-sm flex items-center gap-2">
+                                                <div className="mt-4 sm:mt-0 px-4 py-2 bg-emerald-50 text-emerald-600 font-bold rounded-xl border border-emerald-100 text-sm flex items-center gap-2 shrink-0">
                                                     <CheckCircle2 className="w-4 h-4" />
                                                     {service.status}
                                                 </div>

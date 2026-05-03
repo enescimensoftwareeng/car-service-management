@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Service;
-use App\Models\ServiceItem; // Güncelleme için eklendi
+use App\Models\ServiceItem;
 use App\Models\Vehicle;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -68,10 +68,11 @@ class ServiceController extends Controller
      */
     public function storeItem(Request $request, Service $service)
     {
+        // YENİ: description -> item_name, price -> unit_price olarak güncellendi
         $validated = $request->validate([
-            'description' => 'required|string|max:255',
+            'item_name' => 'required|string|max:255',
             'quantity' => 'required|integer|min:1',
-            'price' => 'required|numeric|min:0',
+            'unit_price' => 'required|numeric|min:0',
         ]);
 
         $service->items()->create($validated);
@@ -80,14 +81,15 @@ class ServiceController extends Controller
     }
 
     /**
-     * 6. Faturadaki mevcut bir kalemi günceller. (YENİ EKLENEN KISIM)
+     * 6. Faturadaki mevcut bir kalemi günceller.
      */
     public function updateItem(Request $request, $itemId)
     {
+        // YENİ: description -> item_name, price -> unit_price olarak güncellendi
         $validated = $request->validate([
-            'description' => 'required|string|max:255',
+            'item_name' => 'required|string|max:255',
             'quantity' => 'required|integer|min:1',
-            'price' => 'required|numeric|min:0',
+            'unit_price' => 'required|numeric|min:0',
         ]);
 
         $item = ServiceItem::findOrFail($itemId);

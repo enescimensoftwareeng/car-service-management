@@ -4,31 +4,33 @@ import { useState } from 'react';
 
 export default function Show({ auth, service }) {
     const [showToast, setShowToast] = useState(false);
-
-    // YENİLİK: Düzenleme (Güncelleme) modunu kontrol eden state'ler
+    const [showModal, setShowModal] = useState(false);
     const [editingItemId, setEditingItemId] = useState(null);
-    const [editForm, setEditForm] = useState({ description: '', quantity: 1, price: '' });
+
+    // YENİ: Veritabanındaki gerçek isimlerle eşleşti
+    const [editForm, setEditForm] = useState({ item_name: '', quantity: 1, unit_price: '' });
 
     const { data, setData, post, processing, reset, errors } = useForm({
-        description: '',
+        item_name: '',
         quantity: 1,
-        price: '',
+        unit_price: '',
     });
 
-    // 1. İSTEK: Onay Penceresi (Emin misiniz?)
     const submitItem = (e) => {
         e.preventDefault();
+        setShowModal(true);
+    };
 
-        if (window.confirm("Bu kalemi faturaya eklemek istediğinize emin misiniz?")) {
-            post(route('services.items.store', service.id), {
-                preserveScroll: true,
-                onSuccess: () => {
-                    reset();
-                    setShowToast(true);
-                    setTimeout(() => setShowToast(false), 3000);
-                },
-            });
-        }
+    const confirmAndSubmit = () => {
+        post(route('services.items.store', service.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                reset();
+                setShowModal(false);
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 3000);
+            },
+        });
     };
 
     const changeStatus = (newStatus) => {
@@ -37,10 +39,9 @@ export default function Show({ auth, service }) {
         });
     };
 
-    // 2. İSTEK: Düzenleme (Güncelleme) İşlemleri
     const startEdit = (item) => {
         setEditingItemId(item.id);
-        setEditForm({ description: item.description, quantity: item.quantity, price: item.price });
+        setEditForm({ item_name: item.item_name, quantity: item.quantity, unit_price: item.unit_price });
     };
 
     const cancelEdit = () => {
@@ -58,7 +59,8 @@ export default function Show({ auth, service }) {
         });
     };
 
-    const totalCost = service.items?.reduce((total, item) => total + (item.price * item.quantity), 0) || 0;
+    // YENİ: Toplam hesaplama unit_price üzerinden yapılıyor
+    const totalCost = service.items?.reduce((total, item) => total + (item.unit_price * item.quantity), 0) || 0;
 
     return (
         <AuthenticatedLayout
@@ -114,26 +116,25 @@ export default function Show({ auth, service }) {
                                         <th className="p-3 text-center">Adet</th>
                                         <th className="p-3 text-right">Birim Fiyat</th>
                                         <th className="p-3 text-right">Toplam</th>
-                                        <th className="p-3 text-center">İşlem</th> {/* YENİ SÜTUN */}
+                                        <th className="p-3 text-center">İşlem</th>
                                     </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
                                     {service.items.map((item) => (
                                         <tr key={item.id} className={`hover:bg-gray-50 ${editingItemId === item.id ? 'bg-blue-50' : ''}`}>
                                             {editingItemId === item.id ? (
-                                                /* DÜZENLEME MODU GÖRÜNÜMÜ */
                                                 <>
                                                     <td className="p-2">
-                                                        <input type="text" value={editForm.description} onChange={e => setEditForm({...editForm, description: e.target.value})} className="w-full border-gray-300 rounded text-sm py-1" />
+                                                        <input type="text" value={editForm.item_name} onChange={e => setEditForm({...editForm, item_name: e.target.value})} className="w-full border-gray-300 rounded text-sm py-1" />
                                                     </td>
                                                     <td className="p-2">
                                                         <input type="number" min="1" value={editForm.quantity} onChange={e => setEditForm({...editForm, quantity: e.target.value})} className="w-full border-gray-300 rounded text-sm text-center py-1" />
                                                     </td>
                                                     <td className="p-2">
-                                                        <input type="number" step="0.01" value={editForm.price} onChange={e => setEditForm({...editForm, price: e.target.value})} className="w-full border-gray-300 rounded text-sm text-right py-1" />
+                                                        <input type="number" step="0.01" value={editForm.unit_price} onChange={e => setEditForm({...editForm, unit_price: e.target.value})} className="w-full border-gray-300 rounded text-sm text-right py-1" />
                                                     </td>
                                                     <td className="p-2 text-right font-bold text-gray-700">
-                                                        {(editForm.quantity * editForm.price).toLocaleString('tr-TR')} ₺
+                                                        {(editForm.quantity * editForm.unit_price).toLocaleString('tr-TR')} ₺
                                                     </td>
                                                     <td className="p-2 text-center flex justify-center gap-1 mt-1">
                                                         <button onClick={() => saveEdit(item)} className="bg-green-500 text-white px-2 py-1 rounded text-xs font-bold hover:bg-green-600 transition">Kaydet</button>
@@ -141,12 +142,11 @@ export default function Show({ auth, service }) {
                                                     </td>
                                                 </>
                                             ) : (
-                                                /* NORMAL LİSTE GÖRÜNÜMÜ */
                                                 <>
-                                                    <td className="p-3 font-medium text-gray-800">{item.description}</td>
+                                                    <td className="p-3 font-medium text-gray-800">{item.item_name}</td>
                                                     <td className="p-3 text-center">{item.quantity}</td>
-                                                    <td className="p-3 text-right">{Number(item.price).toLocaleString('tr-TR')} ₺</td>
-                                                    <td className="p-3 text-right font-bold text-gray-700">{(item.quantity * item.price).toLocaleString('tr-TR')} ₺</td>
+                                                    <td className="p-3 text-right">{Number(item.unit_price).toLocaleString('tr-TR')} ₺</td>
+                                                    <td className="p-3 text-right font-bold text-gray-700">{(item.quantity * item.unit_price).toLocaleString('tr-TR')} ₺</td>
                                                     <td className="p-3 text-center">
                                                         <button onClick={() => startEdit(item)} className="text-blue-600 hover:text-blue-800 text-sm font-semibold underline">Düzenle</button>
                                                     </td>
@@ -176,8 +176,8 @@ export default function Show({ auth, service }) {
                             <form onSubmit={submitItem} className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Parça veya İşçilik Adı</label>
-                                    <input type="text" value={data.description} onChange={e => setData('description', e.target.value)} className="mt-1 block w-full border-gray-300 focus:border-blue-500 rounded-md shadow-sm" required />
-                                    {errors.description && <div className="text-red-500 text-xs mt-1">{errors.description}</div>}
+                                    <input type="text" value={data.item_name} onChange={e => setData('item_name', e.target.value)} className="mt-1 block w-full border-gray-300 focus:border-blue-500 rounded-md shadow-sm" required />
+                                    {errors.item_name && <div className="text-red-500 text-xs mt-1">{errors.item_name}</div>}
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
@@ -186,7 +186,8 @@ export default function Show({ auth, service }) {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Birim Fiyat (₺)</label>
-                                        <input type="number" step="0.01" value={data.price} onChange={e => setData('price', e.target.value)} className="mt-1 block w-full border-gray-300 focus:border-blue-500 rounded-md shadow-sm" required />
+                                        <input type="number" step="0.01" value={data.unit_price} onChange={e => setData('unit_price', e.target.value)} className="mt-1 block w-full border-gray-300 focus:border-blue-500 rounded-md shadow-sm" required />
+                                        {errors.unit_price && <div className="text-red-500 text-xs mt-1">{errors.unit_price}</div>}
                                     </div>
                                 </div>
                                 <button type="submit" disabled={processing} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition mt-4 shadow-sm">
@@ -197,6 +198,33 @@ export default function Show({ auth, service }) {
                     </div>
                 </div>
             </div>
+
+            {/* ŞIK ONAY MODALI */}
+            {showModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-all">
+                    <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl mx-4 animate-in fade-in zoom-in duration-200">
+                        <h3 className="text-xl font-black text-slate-800 mb-2">Kalem Eklenecek</h3>
+                        <p className="text-slate-500 mb-8 text-sm">
+                            <span className="font-bold text-slate-700">{data.item_name}</span> faturaya yansıtılacaktır. Onaylıyor musunuz?
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className="flex-1 py-3 px-4 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                            >
+                                İptal
+                            </button>
+                            <button
+                                onClick={confirmAndSubmit}
+                                disabled={processing}
+                                className="flex-1 py-3 px-4 bg-blue-600 text-white font-bold rounded-xl shadow-md shadow-blue-500/20 hover:bg-blue-700 transition-colors disabled:opacity-50"
+                            >
+                                Evet, Ekle
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }

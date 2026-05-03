@@ -10,7 +10,12 @@ class ServiceItem extends Model
     use HasFactory;
 
     // 'name' kelimesini 'description' olarak güncelledik!
-    protected $fillable = ['service_id', 'description', 'quantity', 'price'];
+    protected $fillable = [
+        'service_id',
+        'item_name',
+        'quantity',
+        'unit_price'
+    ];
 
     // Bu kalem hangi servise (iş emrine) ait?
     public function service()
