@@ -11,7 +11,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-
 // ANA SAYFA
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -36,38 +35,29 @@ Route::get('/dashboard', function () {
 
 // GÜVENLİ BÖLGE (Sadece Giriş Yapanlar)
 Route::middleware('auth')->group(function () {
-    // Profil
+
+    // Profil İşlemleri
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // SİSTEM SORUMLUSU DUVARI: Sadece Usta ve Adminler
     Route::middleware('role:Usta')->group(function () {
+
+        // Temel Kaynaklar (Araçlar ve Servis Kayıtları)
         Route::resource('vehicles', VehicleController::class);
         Route::resource('services', ServiceController::class);
 
-        // Faturaya parça/işçilik ekleme rotası
-        Route::post('/services/{service}/items', [ServiceController::class, 'addItem'])->name('services.add-item');
+        // FATURA KALEMLERİ İŞLEMLERİ
+        // 1. Yeni kalem ekleme
+        Route::post('services/{service}/items', [ServiceController::class, 'storeItem'])->name('services.items.store');
 
-        // DURUM GÜNCELLEME ROTASI BURADA:
+        // 2. Mevcut kalemi GÜNCELLEME (İstediğin yeni özellik)
+        Route::put('/service-items/{item}', [ServiceController::class, 'updateItem'])->name('services.items.update');
+
+        // SERVİS DURUM GÜNCELLEME (Beklemede, İşlemde, Tamamlandı)
         Route::patch('/services/{service}/status', [ServiceController::class, 'update'])->name('services.update-status');
     });
 });
 
 require __DIR__.'/auth.php';
-
-
-
-Route::middleware('auth')->group(function () {
-    Route::resource('vehicles', VehicleController::class);
-    Route::resource('services', ServiceController::class); // YENİ EKLENEN SATIR
-});
-
-// Existing routes...
-Route::middleware('auth')->group(function () {
-    Route::resource('vehicles', VehicleController::class);
-    Route::resource('services', ServiceController::class);
-
-    // YENİ EKLENEN SATIR: Parça ekleme rotası
-    Route::post('services/{service}/items', [ServiceController::class, 'storeItem'])->name('services.items.store');
-});

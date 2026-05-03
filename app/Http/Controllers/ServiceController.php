@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Service;
+use App\Models\ServiceItem; // Güncelleme için eklendi
 use App\Models\Vehicle;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -65,10 +66,10 @@ class ServiceController extends Controller
     /**
      * 5. İlgili servise yeni bir parça veya işçilik kalemi ekler.
      */
-    public function addItem(Request $request, Service $service)
+    public function storeItem(Request $request, Service $service)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
             'quantity' => 'required|integer|min:1',
             'price' => 'required|numeric|min:0',
         ]);
@@ -79,7 +80,24 @@ class ServiceController extends Controller
     }
 
     /**
-     * 6. Servisin (İş emrinin) durumunu günceller. (EKSİK OLAN KISIM EKLENDİ)
+     * 6. Faturadaki mevcut bir kalemi günceller. (YENİ EKLENEN KISIM)
+     */
+    public function updateItem(Request $request, $itemId)
+    {
+        $validated = $request->validate([
+            'description' => 'required|string|max:255',
+            'quantity' => 'required|integer|min:1',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $item = ServiceItem::findOrFail($itemId);
+        $item->update($validated);
+
+        return back()->with('success', 'Fatura kalemi güncellendi.');
+    }
+
+    /**
+     * 7. Servisin (İş emrinin) durumunu günceller.
      */
     public function update(Request $request, string $id)
     {
