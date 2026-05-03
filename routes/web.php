@@ -21,17 +21,66 @@ Route::get('/', function () {
     ]);
 });
 
-// YÖNETİM PANELİ (Gelişmiş Raporlama)
+// YÖNETİM PANELİ (Kullanıcı Rolüne Göre Yönlendirme)
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard', [
-        'stats' => [
-            'vehicles' => Vehicle::count(),
-            'customers' => User::where('role_id', 3)->count(),
-            'brands' => Brand::count(),
-            'daily_services' => Service::whereDate('created_at', now())->count(),
-        ]
-    ]);
+    $user = auth()->user();
+
+    // Rol 1: Sistem Yöneticisi (Admin)
+    if ($user->role_id === 1) {
+        return Inertia::render('Dashboard', [
+            'stats' => [
+                'vehicles' => Vehicle::count(),
+                'customers' => User::where('role_id', 3)->count(),
+                'brands' => Brand::count(),
+                'daily_services' => Service::whereDate('created_at', now())->count(),
+            ]
+        ]);
+    }
+
+    // Rol 2: Servis Ustası
+    if ($user->role_id === 2) {
+        return Inertia::render('Dashboard', [
+            'stats' => [
+                'daily_services' => Service::whereDate('created_at', now())->count(),
+            ]
+        ]);
+    }
+
+    // Rol 3: Müşteri
+    if ($user->role_id === 3) {
+
+        // 1. Müşterinin Araçları
+        $vehicles = Vehicle::where('owner_id', $user->id)->get();
+
+        // 2. Aktif (Devam Eden) Servis Kayıtları
+        $activeServices = Service::with('vehicle')
+            ->whereHas('vehicle', function ($query) use ($user) {
+                $query->where('owner_id', $user->id);
+            })
+            ->whereNotIn('status', ['Tamamlandı', 'Teslim Edildi'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // 3. Geçmiş (Tamamlanmış) Servis Kayıtları (YENİ EKLENDİ)
+        $pastServices = Service::with('vehicle')
+            ->whereHas('vehicle', function ($query) use ($user) {
+                $query->where('owner_id', $user->id);
+            })
+            ->whereIn('status', ['Tamamlandı', 'Teslim Edildi'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('Customer/Dashboard', [
+            'vehicles' => $vehicles,
+            'activeServices' => $activeServices,
+            'pastServices' => $pastServices // React tarafına gönderiliyor
+        ]);
+    }
+
+    // Belirsiz rol
+    abort(403, 'Yetkisiz erişim.');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
 
 // GÜVENLİ BÖLGE (Sadece Giriş Yapanlar)
 Route::middleware('auth')->group(function () {
@@ -41,23 +90,15 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // SİSTEM SORUMLUSU DUVARI: Sadece Usta ve Adminler
-    Route::middleware('role:Usta')->group(function () {
+    // Araçlar ve Servisler
+    Route::resource('vehicles', VehicleController::class);
+    Route::resource('services', ServiceController::class);
 
-        // Temel Kaynaklar (Araçlar ve Servis Kayıtları)
-        Route::resource('vehicles', VehicleController::class);
-        Route::resource('services', ServiceController::class);
+    // Faturaya parça/işçilik ekleme rotası
+    Route::post('services/{service}/items', [ServiceController::class, 'storeItem'])->name('services.items.store');
 
-        // FATURA KALEMLERİ İŞLEMLERİ
-        // 1. Yeni kalem ekleme
-        Route::post('services/{service}/items', [ServiceController::class, 'storeItem'])->name('services.items.store');
-
-        // 2. Mevcut kalemi GÜNCELLEME (İstediğin yeni özellik)
-        Route::put('/service-items/{item}', [ServiceController::class, 'updateItem'])->name('services.items.update');
-
-        // SERVİS DURUM GÜNCELLEME (Beklemede, İşlemde, Tamamlandı)
-        Route::patch('/services/{service}/status', [ServiceController::class, 'update'])->name('services.update-status');
-    });
+    // DURUM GÜNCELLEME ROTASI:
+    Route::patch('/services/{service}/status', [ServiceController::class, 'update'])->name('services.update-status');
 });
 
 require __DIR__.'/auth.php';

@@ -51,23 +51,40 @@ export default function AuthenticatedLayout({ user, header, children }) {
                                     <span className="font-black text-2xl leading-none tracking-tighter text-slate-900">
                                         SERVİS<span className="text-blue-600">PRO</span>
                                     </span>
-                                    <span className="text-[11px] font-bold text-slate-400 tracking-[0.25em] uppercase mt-1.5">Management</span>
+                                    <span className="text-[11px] font-bold text-slate-400 tracking-[0.25em] uppercase mt-1.5">
+                                        {/* Logo altındaki yazı da role göre değişsin */}
+                                        {user?.role_id === 3 ? 'MÜŞTERİ PANELİ' : 'MANAGEMENT'}
+                                    </span>
                                 </div>
                             </Link>
 
+                            {/* AKILLI MENÜ (Sadece Yönetici ve Usta görebilir, Müşteri göremez) */}
                             <div className="hidden space-x-10 sm:flex">
-                                <NavLink href={route('dashboard')} active={route().current('dashboard')} className="flex items-center gap-3 py-2">
-                                    <LayoutDashboard className="w-5 h-5" />
-                                    <span className="font-semibold text-[15px]">Yönetim Paneli</span>
-                                </NavLink>
-                                <NavLink href={route('vehicles.index')} active={route().current('vehicles.index')} className="flex items-center gap-3 py-2">
-                                    <Car className="w-5 h-5" />
-                                    <span className="font-semibold text-[15px]">Araçlar</span>
-                                </NavLink>
-                                <NavLink href={route('services.index')} active={route().current('services.*')} className="flex items-center gap-3 py-2">
-                                    <Wrench className="w-5 h-5" />
-                                    <span className="font-semibold text-[15px]">Servis Kayıtları</span>
-                                </NavLink>
+                                {user?.role_id !== 3 ? (
+                                    <>
+                                        {/* YÖNETİCİ & USTA LİNKLERİ */}
+                                        <NavLink href={route('dashboard')} active={route().current('dashboard')} className="flex items-center gap-3 py-2">
+                                            <LayoutDashboard className="w-5 h-5" />
+                                            <span className="font-semibold text-[15px]">Yönetim Paneli</span>
+                                        </NavLink>
+                                        <NavLink href={route('vehicles.index')} active={route().current('vehicles.index')} className="flex items-center gap-3 py-2">
+                                            <Car className="w-5 h-5" />
+                                            <span className="font-semibold text-[15px]">Tüm Araçlar</span>
+                                        </NavLink>
+                                        <NavLink href={route('services.index')} active={route().current('services.*')} className="flex items-center gap-3 py-2">
+                                            <Wrench className="w-5 h-5" />
+                                            <span className="font-semibold text-[15px]">Servis Kayıtları</span>
+                                        </NavLink>
+                                    </>
+                                ) : (
+                                    <>
+                                        {/* MÜŞTERİ LİNKLERİ */}
+                                        <NavLink href={route('dashboard')} active={route().current('dashboard')} className="flex items-center gap-3 py-2">
+                                            <LayoutDashboard className="w-5 h-5" />
+                                            <span className="font-semibold text-[15px]">Panelim</span>
+                                        </NavLink>
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -89,32 +106,21 @@ export default function AuthenticatedLayout({ user, header, children }) {
                                 <Dropdown>
                                     <Dropdown.Trigger>
                                         <button className="relative flex items-center gap-3 p-1.5 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 group">
-                                            {/* Profil İkon Kutusu */}
                                             <div className="w-11 h-11 rounded-xl bg-slate-50 flex items-center justify-center group-hover:bg-blue-50 transition-colors">
                                                 <UserCircle className="w-7 h-7 text-slate-400 group-hover:text-blue-600 transition-colors" />
                                             </div>
-
-                                            {/* Belirginleştirici Ok (Chevron) */}
                                             <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-all group-hover:translate-y-0.5 mr-2" />
-
-                                            {/* Durum Noktası */}
                                             <div className="absolute top-1 left-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
                                         </button>
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content align="right" width="64" contentClasses="py-0 bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden mt-2">
-                                        {/* Üst Bilgi Paneli */}
                                         <div className="px-6 py-5 bg-slate-50/50 border-b border-slate-100">
                                             <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em] mb-1">Hesap Ayarları</p>
                                             <p className="text-sm font-bold text-slate-700 truncate">{user?.email}</p>
                                         </div>
-
-                                        {/* Menü Linkleri */}
                                         <div className="p-3">
-                                            <Dropdown.Link
-                                                href={route('profile.edit')}
-                                                className="flex items-center gap-4 px-4 py-3.5 text-slate-700 hover:bg-blue-50 hover:text-blue-700 rounded-2xl transition-all duration-200 group"
-                                            >
+                                            <Dropdown.Link href={route('profile.edit')} className="flex items-center gap-4 px-4 py-3.5 text-slate-700 hover:bg-blue-50 hover:text-blue-700 rounded-2xl transition-all duration-200 group">
                                                 <div className="p-2 bg-white rounded-xl shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-colors">
                                                     <Settings className="w-4 h-4" />
                                                 </div>
@@ -123,12 +129,7 @@ export default function AuthenticatedLayout({ user, header, children }) {
 
                                             <div className="h-px bg-slate-100/60 my-2 mx-4"></div>
 
-                                            <Dropdown.Link
-                                                href={route('logout')}
-                                                method="post"
-                                                as="button"
-                                                className="w-full flex items-center gap-4 px-4 py-3.5 text-red-500 hover:bg-red-50 rounded-2xl transition-all duration-200 group text-left"
-                                            >
+                                            <Dropdown.Link href={route('logout')} method="post" as="button" className="w-full flex items-center gap-4 px-4 py-3.5 text-red-500 hover:bg-red-50 rounded-2xl transition-all duration-200 group text-left">
                                                 <div className="p-2 bg-white rounded-xl shadow-sm group-hover:bg-red-600 group-hover:text-white transition-colors">
                                                     <LogOut className="w-4 h-4" />
                                                 </div>
@@ -142,22 +143,27 @@ export default function AuthenticatedLayout({ user, header, children }) {
 
                         {/* Mobil Menü Butonu */}
                         <div className="flex items-center sm:hidden">
-                            <button
-                                onClick={() => setShowingNavigationDropdown(!showingNavigationDropdown)}
-                                className="p-3 rounded-2xl bg-slate-50 text-slate-500 hover:bg-slate-100 transition"
-                            >
+                            <button onClick={() => setShowingNavigationDropdown(!showingNavigationDropdown)} className="p-3 rounded-2xl bg-slate-50 text-slate-500 hover:bg-slate-100 transition">
                                 {showingNavigationDropdown ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* Mobil Menü İçeriği */}
+                {/* Mobil Menü İçeriği (Yine Role Göre Ayrılmış) */}
                 <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden bg-white border-b border-slate-100'}>
                     <div className="pt-2 pb-3 space-y-1 px-4">
-                        <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>Yönetim Paneli</ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('vehicles.index')} active={route().current('vehicles.index')}>Araç Yönetimi</ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('services.index')} active={route().current('services.*')}>Servis Kayıtları</ResponsiveNavLink>
+                        {user?.role_id !== 3 ? (
+                            <>
+                                <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>Yönetim Paneli</ResponsiveNavLink>
+                                <ResponsiveNavLink href={route('vehicles.index')} active={route().current('vehicles.index')}>Tüm Araçlar</ResponsiveNavLink>
+                                <ResponsiveNavLink href={route('services.index')} active={route().current('services.*')}>Servis Kayıtları</ResponsiveNavLink>
+                            </>
+                        ) : (
+                            <>
+                                <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>Panelim</ResponsiveNavLink>
+                            </>
+                        )}
                     </div>
                 </div>
             </nav>
