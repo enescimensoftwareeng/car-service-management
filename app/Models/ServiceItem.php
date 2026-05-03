@@ -9,10 +9,9 @@ class ServiceItem extends Model
 {
     use HasFactory;
 
-    // 'name' kelimesini 'description' olarak güncelledik!
-    protected $fillable = ['service_id', 'description', 'quantity', 'price'];
+    // price yerine part_price ve labor_price geldi!
+    protected $fillable = ['service_id', 'description', 'quantity', 'part_price', 'labor_price'];
 
-    // Bu kalem hangi servise (iş emrine) ait?
     public function service()
     {
         return $this->belongsTo(Service::class);

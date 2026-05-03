@@ -63,39 +63,32 @@ class ServiceController extends Controller
         ]);
     }
 
-    /**
-     * 5. İlgili servise yeni bir parça veya işçilik kalemi ekler.
-     */
     public function storeItem(Request $request, Service $service)
     {
         $validated = $request->validate([
             'description' => 'required|string|max:255',
             'quantity' => 'required|integer|min:1',
-            'price' => 'required|numeric|min:0',
+            'part_price' => 'required|numeric|min:0',
+            'labor_price' => 'required|numeric|min:0',
         ]);
 
         $service->items()->create($validated);
-
         return back()->with('success', 'Kalem başarıyla eklendi.');
     }
 
-    /**
-     * 6. Faturadaki mevcut bir kalemi günceller. (YENİ EKLENEN KISIM)
-     */
     public function updateItem(Request $request, $itemId)
     {
         $validated = $request->validate([
             'description' => 'required|string|max:255',
             'quantity' => 'required|integer|min:1',
-            'price' => 'required|numeric|min:0',
+            'part_price' => 'required|numeric|min:0',
+            'labor_price' => 'required|numeric|min:0',
         ]);
 
         $item = ServiceItem::findOrFail($itemId);
         $item->update($validated);
-
         return back()->with('success', 'Fatura kalemi güncellendi.');
     }
-
     /**
      * 7. Servisin (İş emrinin) durumunu günceller.
      */
