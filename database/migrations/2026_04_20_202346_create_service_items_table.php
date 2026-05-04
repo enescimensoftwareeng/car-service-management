@@ -10,14 +10,11 @@ return new class extends Migration
     {
         Schema::create('service_items', function (Blueprint $table) {
             $table->id();
-
-            // --- EKLENEN SÜTUNLAR ---
-            $table->unsignedBigInteger('service_id'); // Hangi iş emrine (faturaya) ait olduğu
-            $table->string('item_name'); // Parça veya işçilik adı (Örn: Buji, Motor Yağı, İşçilik)
-            $table->integer('quantity')->default(1); // Adet/Miktar
-            $table->decimal('unit_price', 10, 2); // Birim Fiyat (Örn: 1500.50 TL)
-            // ----------------------------------
-
+            $table->foreignId('service_id')->constrained()->cascadeOnDelete();
+            $table->string('description');
+            $table->integer('quantity')->default(1);
+            $table->decimal('part_price', 10, 2)->default(0);  // Parça Tutarı
+            $table->decimal('labor_price', 10, 2)->default(0); // İşçilik Tutarı
             $table->timestamps();
         });
     }

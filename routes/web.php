@@ -52,8 +52,8 @@ Route::get('/dashboard', function () {
         // 1. Müşterinin Araçları
         $vehicles = Vehicle::where('owner_id', $user->id)->get();
 
-        // 2. Aktif (Devam Eden) Servis Kayıtları
-        $activeServices = Service::with('vehicle')
+        // 2. Aktif (Devam Eden) Servis Kayıtları ('items' ilişkisi eklendi)
+        $activeServices = Service::with(['vehicle', 'items'])
             ->whereHas('vehicle', function ($query) use ($user) {
                 $query->where('owner_id', $user->id);
             })
@@ -61,8 +61,8 @@ Route::get('/dashboard', function () {
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // 3. Geçmiş (Tamamlanmış) Servis Kayıtları (YENİ EKLENDİ)
-        $pastServices = Service::with('vehicle')
+        // 3. Geçmiş (Tamamlanmış) Servis Kayıtları ('items' ilişkisi eklendi)
+        $pastServices = Service::with(['vehicle', 'items'])
             ->whereHas('vehicle', function ($query) use ($user) {
                 $query->where('owner_id', $user->id);
             })
