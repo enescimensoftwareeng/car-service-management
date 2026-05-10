@@ -10,7 +10,8 @@ import {
     Menu,
     X,
     ChevronDown,
-    Zap
+    Zap,
+    Users
 } from 'lucide-react';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
@@ -75,6 +76,28 @@ export default function AuthenticatedLayout({ user, header, children }) {
                                             <Wrench className="w-5 h-5" />
                                             <span className="font-semibold text-[15px]">Servis Kayıtları</span>
                                         </NavLink>
+                                        
+                                        {/* SADECE YÖNETİCİ LİNKLERİ */}
+                                        {user?.role_id === 1 && (
+                                            <div className="relative flex items-center">
+                                                <Dropdown>
+                                                    <Dropdown.Trigger>
+                                                        <button className={`flex items-center gap-2 py-2 font-semibold text-[15px] transition duration-150 ease-in-out border-b-2 ${route().current('technicians.*') ? 'text-slate-900 border-blue-600' : 'text-slate-500 border-transparent hover:text-slate-700 hover:border-slate-300'}`}>
+                                                            <Settings className="w-5 h-5" />
+                                                            Sistem Yönetimi
+                                                            <ChevronDown className="w-4 h-4" />
+                                                        </button>
+                                                    </Dropdown.Trigger>
+
+                                                    <Dropdown.Content align="left" width="48" contentClasses="py-1 bg-white rounded-xl shadow-xl border border-slate-100 mt-2">
+                                                        <Dropdown.Link href={route('technicians.index')} className="flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 hover:text-blue-700 transition-colors font-medium">
+                                                            <Users className="w-4 h-4" />
+                                                            Personel Yönetimi
+                                                        </Dropdown.Link>
+                                                    </Dropdown.Content>
+                                                </Dropdown>
+                                            </div>
+                                        )}
                                     </>
                                 ) : (
                                     <>
@@ -158,6 +181,19 @@ export default function AuthenticatedLayout({ user, header, children }) {
                                 <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>Yönetim Paneli</ResponsiveNavLink>
                                 <ResponsiveNavLink href={route('vehicles.index')} active={route().current('vehicles.index')}>Tüm Araçlar</ResponsiveNavLink>
                                 <ResponsiveNavLink href={route('services.index')} active={route().current('services.*')}>Servis Kayıtları</ResponsiveNavLink>
+                                {user?.role_id === 1 && (
+                                    <>
+                                        <div className="px-4 py-2 mt-2 text-xs font-black text-slate-400 uppercase tracking-widest">
+                                            Sistem Yönetimi
+                                        </div>
+                                        <ResponsiveNavLink href={route('technicians.index')} active={route().current('technicians.*')} className="pl-8">
+                                            <div className="flex items-center gap-2">
+                                                <Users className="w-4 h-4" />
+                                                Personel Yönetimi
+                                            </div>
+                                        </ResponsiveNavLink>
+                                    </>
+                                )}
                             </>
                         ) : (
                             <>

@@ -30,7 +30,7 @@ export default function Index({ auth, services }) {
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                 <div>
                                     <h3 className="text-xl font-bold">{service.vehicle?.plate} - {service.vehicle?.brand?.name}</h3>
-                                    <p className="text-sm text-gray-500 mt-1">Sorumlu Usta: <span className="font-semibold text-gray-700">{service.technician?.name}</span></p>
+                                    <p className="text-sm text-gray-500 mt-1">Sorumlu Usta: <span className="font-semibold text-gray-700">{service.technician?.name || 'Sistemden Silinmiş (Eski Personel)'}</span></p>
                                     <p className="mt-3 text-gray-700 bg-gray-50 p-3 rounded border"><strong>Şikayet:</strong> {service.complaint}</p>
                                 </div>
                                 <div className="text-right flex flex-col items-end gap-3 w-full md:w-auto">

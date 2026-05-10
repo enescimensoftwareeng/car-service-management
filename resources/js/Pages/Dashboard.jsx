@@ -5,7 +5,7 @@ import {
     ChevronRight, Zap
 } from 'lucide-react';
 
-export default function Dashboard({ auth, stats }) {
+export default function Dashboard({ auth, stats, appointments = [] }) {
     return (
         <AuthenticatedLayout
             user={auth?.user}
@@ -111,6 +111,72 @@ export default function Dashboard({ auth, stats }) {
                             </Link>
                         </div>
                     </div>
+
+                    {/* Randevu Talepleri (Sadece Admin için görünür) */}
+                    {auth?.user?.role_id === 1 && (
+                        <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-8">
+                            <h3 className="text-xl font-black text-slate-800 flex items-center gap-2 mb-8">
+                                <Zap className="w-5 h-5 text-indigo-500 fill-indigo-500" />
+                                Randevu Talepleri
+                            </h3>
+                            
+                            <div className="space-y-4">
+                                {appointments && appointments.length > 0 ? (
+                                    appointments.map((appointment) => (
+                                        <div key={appointment.id} className="flex flex-col md:flex-row items-center justify-between p-5 rounded-2xl border border-slate-100 bg-slate-50">
+                                            <div className="mb-4 md:mb-0">
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <span className="font-bold text-slate-900">{appointment.user?.name}</span>
+                                                    <span className="text-xs text-slate-500">{appointment.user?.phone}</span>
+                                                </div>
+                                                <p className="text-sm text-slate-600">
+                                                    <strong>Araç:</strong> {appointment.vehicle?.plate} ({appointment.vehicle?.brand?.name} {appointment.vehicle?.model})
+                                                </p>
+                                                <p className="text-sm text-slate-600">
+                                                    <strong>Tarih/Saat:</strong> {appointment.appointment_date} - {appointment.appointment_time}
+                                                </p>
+                                                {appointment.notes && (
+                                                    <p className="text-sm text-slate-500 italic mt-1">"{appointment.notes}"</p>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                {appointment.status === 'Beklemede' ? (
+                                                    <>
+                                                        <Link
+                                                            href={route('appointments.update-status', appointment.id)}
+                                                            method="patch"
+                                                            data={{ status: 'Onaylandı' }}
+                                                            as="button"
+                                                            className="px-4 py-2 bg-emerald-100 text-emerald-700 font-bold rounded-xl text-sm hover:bg-emerald-200 transition"
+                                                        >
+                                                            Onayla
+                                                        </Link>
+                                                        <Link
+                                                            href={route('appointments.update-status', appointment.id)}
+                                                            method="patch"
+                                                            data={{ status: 'Reddedildi' }}
+                                                            as="button"
+                                                            className="px-4 py-2 bg-red-100 text-red-700 font-bold rounded-xl text-sm hover:bg-red-200 transition"
+                                                        >
+                                                            Reddet
+                                                        </Link>
+                                                    </>
+                                                ) : (
+                                                    <span className={`px-4 py-2 font-bold rounded-xl text-sm ${
+                                                        appointment.status === 'Onaylandı' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+                                                    }`}>
+                                                        {appointment.status}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-sm text-slate-500 text-center py-4">Bekleyen randevu talebi yok.</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </AuthenticatedLayout>

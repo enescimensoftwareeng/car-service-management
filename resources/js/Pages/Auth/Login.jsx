@@ -58,13 +58,13 @@ export default function Login({ status, canResetPassword }) {
                 <form className="mt-8 space-y-6" onSubmit={submit}>
                     <div className="rounded-md shadow-sm space-y-4">
                         <div>
-                            <InputLabel htmlFor="email" value="E-posta Adresi" className="text-gray-300 ml-1" />
+                            <InputLabel htmlFor="email" value="E-posta Adresi" className="!text-white ml-1" />
                             <TextInput
                                 id="email"
                                 type="email"
                                 name="email"
                                 value={data.email}
-                                className="mt-1 block w-full bg-white/5 border-white/10 text-white focus:ring-blue-500 focus:border-blue-500 rounded-lg py-3"
+                                className="mt-1 block w-full bg-white/10 border-white/20 !text-white placeholder-white/50 focus:ring-blue-500 focus:border-blue-500 rounded-lg py-3"
                                 autoComplete="username"
                                 isFocused={true}
                                 onChange={(e) => setData('email', e.target.value)}
@@ -74,13 +74,13 @@ export default function Login({ status, canResetPassword }) {
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="password" value="Şifre" className="text-gray-300 ml-1" />
+                            <InputLabel htmlFor="password" value="Şifre" className="!text-white ml-1" />
                             <TextInput
                                 id="password"
                                 type="password"
                                 name="password"
                                 value={data.password}
-                                className="mt-1 block w-full bg-white/5 border-white/10 text-white focus:ring-blue-500 focus:border-blue-500 rounded-lg py-3"
+                                className="mt-1 block w-full bg-white/10 border-white/20 !text-white placeholder-white/50 focus:ring-blue-500 focus:border-blue-500 rounded-lg py-3"
                                 autoComplete="current-password"
                                 onChange={(e) => setData('password', e.target.value)}
                                 placeholder="••••••••"
