@@ -3,7 +3,9 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\AppointmentController;
 use App\Models\Vehicle;
+use App\Models\Appointment;
 use App\Models\User;
 use App\Models\Brand;
 use App\Models\Service;
@@ -18,8 +20,12 @@ Route::get('/', function () {
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
+        'brands' => Brand::all(),
     ]);
 });
+
+// RANDEVU OLUŞTURMA (Public)
+Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
 
 // YÖNETİM PANELİ (Kullanıcı Rolüne Göre Yönlendirme)
 Route::get('/dashboard', function () {
@@ -33,16 +39,31 @@ Route::get('/dashboard', function () {
                 'customers' => User::where('role_id', 3)->count(),
                 'brands' => Brand::count(),
                 'daily_services' => Service::whereDate('created_at', now())->count(),
-            ]
+                'technicians' => User::where('role_id', 2)->count(),
+            ],
+            'appointments' => Appointment::with(['user', 'vehicle.brand'])->latest()->get()
         ]);
     }
 
     // Rol 2: Servis Ustası
     if ($user->role_id === 2) {
-        return Inertia::render('Dashboard', [
+        $activeTasks = Service::with('vehicle.brand')
+            ->where('technician_id', $user->id)
+            ->whereNotIn('status', ['Tamamlandı', 'Teslim Edildi'])
+            ->latest()
+            ->get();
+
+        $completedTasksCount = Service::where('technician_id', $user->id)
+            ->whereIn('status', ['Tamamlandı', 'Teslim Edildi'])
+            ->count();
+
+        return Inertia::render('Technician/Dashboard', [
             'stats' => [
-                'daily_services' => Service::whereDate('created_at', now())->count(),
-            ]
+                'active_tasks' => $activeTasks->count(),
+                'completed_tasks' => $completedTasksCount,
+                'total_parts' => \App\Models\Part::count(), // Stoktaki parça/ürün çeşidi
+            ],
+            'active_services' => $activeTasks
         ]);
     }
 
@@ -70,10 +91,18 @@ Route::get('/dashboard', function () {
             ->orderBy('created_at', 'desc')
             ->get();
 
+        // 4. Müşterinin Randevuları
+        $appointments = Appointment::with('vehicle.brand')
+            ->where('user_id', $user->id)
+            ->orderBy('appointment_date', 'desc')
+            ->orderBy('appointment_time', 'desc')
+            ->get();
+
         return Inertia::render('Customer/Dashboard', [
             'vehicles' => $vehicles,
             'activeServices' => $activeServices,
-            'pastServices' => $pastServices // React tarafına gönderiliyor
+            'pastServices' => $pastServices, // React tarafına gönderiliyor
+            'appointments' => $appointments
         ]);
     }
 
@@ -90,15 +119,28 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Araçlar ve Servisler
+    // Araçlar, Servisler ve Ustalar
     Route::resource('vehicles', VehicleController::class);
     Route::resource('services', ServiceController::class);
+    
+    // Usta (Technician) Yönetimi (Sadece Admin için kısıtlanmış rotalar)
+    Route::get('/technicians', [App\Http\Controllers\TechnicianController::class, 'index'])->name('technicians.index');
+    Route::post('/technicians', [App\Http\Controllers\TechnicianController::class, 'store'])->name('technicians.store');
+    Route::put('/technicians/{user}', [App\Http\Controllers\TechnicianController::class, 'update'])->name('technicians.update');
+    Route::delete('/technicians/{user}', [App\Http\Controllers\TechnicianController::class, 'destroy'])->name('technicians.destroy');
+    Route::patch('/technicians/{user}/reset-password', [App\Http\Controllers\TechnicianController::class, 'resetPassword'])->name('technicians.reset-password');
 
     // Faturaya parça/işçilik ekleme rotası
     Route::post('services/{service}/items', [ServiceController::class, 'storeItem'])->name('services.items.store');
 
     // DURUM GÜNCELLEME ROTASI:
     Route::patch('/services/{service}/status', [ServiceController::class, 'update'])->name('services.update-status');
+
+    // RANDEVU DURUM GÜNCELLEME (Admin)
+    Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.update-status');
+
+    // DEPO/PARÇA YÖNETİMİ
+    Route::resource('parts', \App\Http\Controllers\PartController::class);
 });
 
 require __DIR__.'/auth.php';

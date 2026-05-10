@@ -1,9 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { Car, Calendar, ChevronRight, ShieldCheck, Activity, Clock, CheckCircle2, History, Receipt } from 'lucide-react';
-
-export default function CustomerDashboard({ auth, vehicles = [], activeServices = [], pastServices = [] }) {
-
+export default function CustomerDashboard({ auth, vehicles = [], activeServices = [], pastServices = [], appointments = [] }) {
     // Tarih formatlamak için yardımcı fonksiyon
     const formatDate = (dateString) => {
         if (!dateString) return 'Tarih Yok';
@@ -202,8 +200,44 @@ export default function CustomerDashboard({ auth, vehicles = [], activeServices 
 
                         </div>
 
-                        {/* SAĞ KOLON: Garajım */}
+                        {/* SAĞ KOLON: Randevularım ve Garajım */}
                         <div className="space-y-8">
+                            
+                            {/* RANDEVULARIM */}
+                            <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
+                                <h4 className="text-lg font-black text-slate-800 flex items-center gap-2 mb-6">
+                                    <Calendar className="w-5 h-5 text-indigo-500" /> Randevularım
+                                </h4>
+                                <div className="space-y-4">
+                                    {appointments && appointments.length > 0 ? (
+                                        appointments.map((appointment) => (
+                                            <div key={appointment.id} className="group p-4 rounded-2xl bg-slate-50 border border-slate-100 transition-all">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <span className="font-bold text-slate-800 text-sm">
+                                                        {formatDate(appointment.appointment_date)} - {appointment.appointment_time}
+                                                    </span>
+                                                    <span className={`text-xs font-bold px-2 py-1 rounded-lg ${
+                                                        appointment.status === 'Onaylandı' ? 'bg-emerald-100 text-emerald-700' :
+                                                        appointment.status === 'Reddedildi' ? 'bg-red-100 text-red-700' :
+                                                        'bg-orange-100 text-orange-700'
+                                                    }`}>
+                                                        {appointment.status}
+                                                    </span>
+                                                </div>
+                                                <div className="text-xs text-slate-500">
+                                                    Araç: {appointment.vehicle?.plate || 'Bilinmiyor'} ({appointment.vehicle?.brand?.name || 'Marka Yok'})
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-center py-6">
+                                            <Calendar className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                                            <p className="text-sm text-slate-500">Kayıtlı randevunuz bulunmuyor.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
                                 <h4 className="text-lg font-black text-slate-800 flex items-center gap-2 mb-6">
                                     <Car className="w-5 h-5 text-blue-500" /> Garajım
@@ -218,7 +252,7 @@ export default function CustomerDashboard({ auth, vehicles = [], activeServices 
                                                     </div>
                                                     <div>
                                                         <p className="font-bold text-slate-900">{vehicle.plate}</p>
-                                                        <p className="text-xs text-slate-500">{vehicle.brand} {vehicle.model}</p>
+                                                        <p className="text-xs text-slate-500">{vehicle.brand?.name} {vehicle.model}</p>
                                                     </div>
                                                 </div>
                                                 <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-blue-500" />

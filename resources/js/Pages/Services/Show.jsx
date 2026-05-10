@@ -1,32 +1,64 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
+import Modal from '@/Components/Modal';
+import { useState, useEffect } from 'react';
 
-export default function Show({ auth, service }) {
-    const [showToast, setShowToast] = useState(false);
+export default function Show({ auth, service, parts = [] }) {
+    const { flash } = usePage().props;
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
     const [editingItemId, setEditingItemId] = useState(null);
     const [editForm, setEditForm] = useState({ description: '', quantity: 1, part_price: 0, labor_price: 0 });
+    const [confirmingItemAdd, setConfirmingItemAdd] = useState(false);
 
-    // price yerine iki ayrı değer tutuyoruz
     const { data, setData, post, processing, reset, errors } = useForm({
+        part_id: '',
         description: '',
         quantity: 1,
         part_price: '',
         labor_price: '',
     });
 
-    const submitItem = (e) => {
-        e.preventDefault();
-        if (window.confirm("Bu kalemi faturaya eklemek istediğinize emin misiniz?")) {
-            post(route('services.items.store', service.id), {
-                preserveScroll: true,
-                onSuccess: () => {
-                    reset();
-                    setShowToast(true);
-                    setTimeout(() => setShowToast(false), 3000);
-                },
+    const showMessage = (msg, type = 'success') => {
+        setToast({ show: true, message: msg, type });
+        setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 5000);
+    };
+
+    useEffect(() => {
+        if (flash?.success) showMessage(flash.success, 'success');
+        if (flash?.warning) showMessage(flash.warning, 'warning');
+    }, [flash]);
+
+    const handlePartSelection = (e) => {
+        const selectedId = e.target.value;
+        if (!selectedId) {
+            setData({ ...data, part_id: '', description: '', part_price: '' });
+            return;
+        }
+
+        const selectedPart = parts.find(p => p.id === parseInt(selectedId));
+        if (selectedPart) {
+            setData({
+                ...data,
+                part_id: selectedPart.id,
+                description: selectedPart.name,
+                part_price: selectedPart.sale_price
             });
         }
+    };
+
+    const submitItem = (e) => {
+        e.preventDefault();
+        setConfirmingItemAdd(true);
+    };
+
+    const confirmAddItem = () => {
+        post(route('services.items.store', service.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                reset();
+                setConfirmingItemAdd(false);
+            },
+        });
     };
 
     const changeStatus = (newStatus) => {
@@ -50,8 +82,6 @@ export default function Show({ auth, service }) {
             preserveScroll: true,
             onSuccess: () => {
                 setEditingItemId(null);
-                setShowToast(true);
-                setTimeout(() => setShowToast(false), 3000);
             }
         });
     };
@@ -70,14 +100,16 @@ export default function Show({ auth, service }) {
         >
             <Head title={`Servis #${service.id}`} />
 
-            {showToast && (
-                <div className="fixed bottom-8 right-8 bg-gray-900 text-white px-5 py-4 rounded-lg shadow-2xl flex items-center gap-3 z-50 border-l-4 border-green-500 animate-pulse font-sans">
-                    <div className="bg-green-500/20 p-1 rounded-full">
-                        <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-                        </svg>
+            {toast.show && (
+                <div className={`fixed bottom-8 right-8 text-white px-5 py-4 rounded-lg shadow-2xl flex items-center gap-3 z-50 border-l-4 animate-pulse font-sans ${toast.type === 'warning' ? 'bg-orange-900 border-orange-500' : 'bg-gray-900 border-green-500'}`}>
+                    <div className={`${toast.type === 'warning' ? 'bg-orange-500/20' : 'bg-green-500/20'} p-1 rounded-full`}>
+                        {toast.type === 'warning' ? (
+                            <svg className="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        ) : (
+                            <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                        )}
                     </div>
-                    <span className="font-semibold text-sm tracking-wide">İşlem başarıyla kaydedildi!</span>
+                    <span className="font-semibold text-sm tracking-wide">{toast.message}</span>
                 </div>
             )}
 
@@ -183,7 +215,21 @@ export default function Show({ auth, service }) {
                             <h3 className="text-lg font-bold mb-4 border-b pb-2 text-blue-600">+ Yeni Kalem Ekle</h3>
                             <form onSubmit={submitItem} className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Yapılan İşlem</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Depodan Parça Seçin (Opsiyonel)</label>
+                                    <select 
+                                        value={data.part_id} 
+                                        onChange={handlePartSelection}
+                                        className="w-full border-gray-300 focus:border-blue-500 rounded-md shadow-sm mb-4 bg-yellow-50"
+                                    >
+                                        <option value="">-- Manuel İşlem Gireceğim --</option>
+                                        {parts.map(p => (
+                                            <option key={p.id} value={p.id}>{p.name} (Stok: {p.stock} | Fiyat: {p.sale_price} ₺)</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Yapılan İşlem / Parça Adı</label>
                                     <input type="text" value={data.description} onChange={e => setData('description', e.target.value)} className="mt-1 block w-full border-gray-300 focus:border-blue-500 rounded-md shadow-sm" placeholder="Örn: Triger Seti Değişimi" required />
                                 </div>
 
@@ -212,6 +258,39 @@ export default function Show({ auth, service }) {
                     </div>
                 </div>
             </div>
+
+            {/* Fatura Ekleme Onay Modalı */}
+            <Modal show={confirmingItemAdd} onClose={() => setConfirmingItemAdd(false)} maxWidth="md">
+                <div className="p-6 text-center">
+                    <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-6">
+                        <svg className="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h2 className="text-2xl font-black text-slate-800 mb-2">
+                        Faturaya Kalem Eklensin mi?
+                    </h2>
+                    <p className="text-slate-500 mb-8 text-sm">
+                        Bu işlem faturanın genel toplamını değiştirecek ve depo bağlantılı bir ürün seçtiyseniz stok otomatik olarak azalacaktır. Onaylıyor musunuz?
+                    </p>
+
+                    <div className="flex items-center justify-center gap-3">
+                        <button
+                            onClick={() => setConfirmingItemAdd(false)}
+                            className="px-6 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                        >
+                            İptal
+                        </button>
+                        <button
+                            onClick={confirmAddItem}
+                            disabled={processing}
+                            className={`px-6 py-2.5 rounded-xl font-bold text-white transition-colors shadow-lg shadow-blue-500/30 ${processing ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                        >
+                            Evet, Faturaya Ekle
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </AuthenticatedLayout>
     );
 }
