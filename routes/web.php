@@ -125,6 +125,9 @@ Route::middleware('auth')->group(function () {
 
     // RANDEVU DURUM GÜNCELLEME (Admin)
     Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.update-status');
+
+    // DEPO/PARÇA YÖNETİMİ
+    Route::resource('parts', \App\Http\Controllers\PartController::class);
 });
 
 require __DIR__.'/auth.php';

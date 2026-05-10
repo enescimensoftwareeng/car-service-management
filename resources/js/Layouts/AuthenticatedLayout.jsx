@@ -11,7 +11,8 @@ import {
     X,
     ChevronDown,
     Zap,
-    Users
+    Users,
+    Package
 } from 'lucide-react';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
@@ -82,7 +83,7 @@ export default function AuthenticatedLayout({ user, header, children }) {
                                             <div className="relative flex items-center">
                                                 <Dropdown>
                                                     <Dropdown.Trigger>
-                                                        <button className={`flex items-center gap-2 py-2 font-semibold text-[15px] transition duration-150 ease-in-out border-b-2 ${route().current('technicians.*') ? 'text-slate-900 border-blue-600' : 'text-slate-500 border-transparent hover:text-slate-700 hover:border-slate-300'}`}>
+                                                        <button className={`flex items-center gap-2 py-2 font-semibold text-[15px] transition duration-150 ease-in-out border-b-2 ${route().current('technicians.*') || route().current('parts.*') ? 'text-slate-900 border-blue-600' : 'text-slate-500 border-transparent hover:text-slate-700 hover:border-slate-300'}`}>
                                                             <Settings className="w-5 h-5" />
                                                             Sistem Yönetimi
                                                             <ChevronDown className="w-4 h-4" />
@@ -93,6 +94,10 @@ export default function AuthenticatedLayout({ user, header, children }) {
                                                         <Dropdown.Link href={route('technicians.index')} className="flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 hover:text-blue-700 transition-colors font-medium">
                                                             <Users className="w-4 h-4" />
                                                             Personel Yönetimi
+                                                        </Dropdown.Link>
+                                                        <Dropdown.Link href={route('parts.index')} className="flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 hover:text-blue-700 transition-colors font-medium">
+                                                            <Package className="w-4 h-4" />
+                                                            Depo Yönetimi
                                                         </Dropdown.Link>
                                                     </Dropdown.Content>
                                                 </Dropdown>
@@ -190,6 +195,12 @@ export default function AuthenticatedLayout({ user, header, children }) {
                                             <div className="flex items-center gap-2">
                                                 <Users className="w-4 h-4" />
                                                 Personel Yönetimi
+                                            </div>
+                                        </ResponsiveNavLink>
+                                        <ResponsiveNavLink href={route('parts.index')} active={route().current('parts.*')} className="pl-8">
+                                            <div className="flex items-center gap-2">
+                                                <Package className="w-4 h-4" />
+                                                Depo Yönetimi
                                             </div>
                                         </ResponsiveNavLink>
                                     </>
