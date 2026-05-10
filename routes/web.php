@@ -47,10 +47,23 @@ Route::get('/dashboard', function () {
 
     // Rol 2: Servis Ustası
     if ($user->role_id === 2) {
-        return Inertia::render('Dashboard', [
+        $activeTasks = Service::with('vehicle.brand')
+            ->where('technician_id', $user->id)
+            ->whereNotIn('status', ['Tamamlandı', 'Teslim Edildi'])
+            ->latest()
+            ->get();
+
+        $completedTasksCount = Service::where('technician_id', $user->id)
+            ->whereIn('status', ['Tamamlandı', 'Teslim Edildi'])
+            ->count();
+
+        return Inertia::render('Technician/Dashboard', [
             'stats' => [
-                'daily_services' => Service::whereDate('created_at', now())->count(),
-            ]
+                'active_tasks' => $activeTasks->count(),
+                'completed_tasks' => $completedTasksCount,
+                'total_parts' => \App\Models\Part::count(), // Stoktaki parça/ürün çeşidi
+            ],
+            'active_services' => $activeTasks
         ]);
     }
 

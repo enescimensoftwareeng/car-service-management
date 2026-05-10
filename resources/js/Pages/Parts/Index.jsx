@@ -160,7 +160,7 @@ export default function PartsIndex({ auth, parts }) {
                                                 )}
                                             </td>
                                             <td className="px-8 py-5">
-                                                <div className="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                                <div className="flex items-center justify-end gap-2 transition-opacity">
                                                     <button
                                                         onClick={() => openEditModal(part)}
                                                         className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"

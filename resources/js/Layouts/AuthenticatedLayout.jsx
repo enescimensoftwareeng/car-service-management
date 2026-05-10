@@ -77,6 +77,14 @@ export default function AuthenticatedLayout({ user, header, children }) {
                                             <Wrench className="w-5 h-5" />
                                             <span className="font-semibold text-[15px]">Servis Kayıtları</span>
                                         </NavLink>
+
+                                        {/* SADECE USTA LİNKLERİ */}
+                                        {user?.role_id === 2 && (
+                                            <NavLink href={route('parts.index')} active={route().current('parts.*')} className="flex items-center gap-3 py-2">
+                                                <Package className="w-5 h-5" />
+                                                <span className="font-semibold text-[15px]">Depo & Stoklar</span>
+                                            </NavLink>
+                                        )}
                                         
                                         {/* SADECE YÖNETİCİ LİNKLERİ */}
                                         {user?.role_id === 1 && (
@@ -186,6 +194,13 @@ export default function AuthenticatedLayout({ user, header, children }) {
                                 <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>Yönetim Paneli</ResponsiveNavLink>
                                 <ResponsiveNavLink href={route('vehicles.index')} active={route().current('vehicles.index')}>Tüm Araçlar</ResponsiveNavLink>
                                 <ResponsiveNavLink href={route('services.index')} active={route().current('services.*')}>Servis Kayıtları</ResponsiveNavLink>
+                                
+                                {user?.role_id === 2 && (
+                                    <ResponsiveNavLink href={route('parts.index')} active={route().current('parts.*')}>
+                                        Depo & Stoklar
+                                    </ResponsiveNavLink>
+                                )}
+
                                 {user?.role_id === 1 && (
                                     <>
                                         <div className="px-4 py-2 mt-2 text-xs font-black text-slate-400 uppercase tracking-widest">
