@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Part;
 use App\Models\Service;
 use App\Models\ServiceItem; // Güncelleme için eklendi
 use App\Models\Vehicle;
@@ -59,20 +60,47 @@ class ServiceController extends Controller
         $service->load(['vehicle.brand', 'technician', 'items']);
 
         return Inertia::render('Services/Show', [
-            'service' => $service
+            'service' => $service,
+            'parts' => Part::all() // Depodaki tüm parçalar frontend'e gönderiliyor
         ]);
     }
 
     public function storeItem(Request $request, Service $service)
     {
         $validated = $request->validate([
+            'part_id' => 'nullable|exists:parts,id', // frontend'den part_id gelebilir
             'description' => 'required|string|max:255',
             'quantity' => 'required|integer|min:1',
             'part_price' => 'required|numeric|min:0',
             'labor_price' => 'required|numeric|min:0',
         ]);
 
-        $service->items()->create($validated);
+        $service->items()->create([
+            'description' => $validated['description'],
+            'quantity' => $validated['quantity'],
+            'part_price' => $validated['part_price'],
+            'labor_price' => $validated['labor_price'],
+        ]);
+
+        // Stok Düşme İşlemi
+        $warningMessage = null;
+        if (!empty($validated['part_id'])) {
+            $part = Part::find($validated['part_id']);
+            if ($part) {
+                // Stoğu kullanılan adet kadar düşür (0'ın altına inmesini engelle)
+                $part->stock = max(0, $part->stock - $validated['quantity']);
+                $part->save();
+
+                if ($part->stock < 20) {
+                    $warningMessage = "{$part->name} adlı parçanın stoğu kritik seviyeye ({$part->stock} adet) düştü!";
+                }
+            }
+        }
+
+        if ($warningMessage) {
+            return back()->with('success', 'Kalem başarıyla eklendi.')->with('warning', $warningMessage);
+        }
+
         return back()->with('success', 'Kalem başarıyla eklendi.');
     }
 
