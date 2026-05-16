@@ -24,6 +24,9 @@ Route::get('/', function () {
     ]);
 });
 
+// PLAKA İLE GEÇMİŞ SORGULAMA (Public API)
+Route::get('/api/vehicle-history', [VehicleController::class, 'publicHistory'])->name('api.vehicle-history');
+
 // RANDEVU OLUŞTURMA (Public)
 Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
 

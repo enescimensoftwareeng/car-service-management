@@ -103,6 +103,27 @@ class VehicleController extends Controller
         return redirect()->route('vehicles.index')->with('success', 'Arac kaydi silindi.');
     }
 
+    public function publicHistory(Request $request)
+    {
+        $validated = $request->validate([
+            'plate' => 'required|string',
+        ]);
+
+        $plate = $this->normalizePlate($validated['plate']);
+
+        $vehicle = Vehicle::with(['brand', 'services' => function ($query) {
+            $query->whereIn('status', ['Tamamlandı', 'Teslim Edildi'])
+                  ->with('items')
+                  ->latest();
+        }])->where('plate', $plate)->first();
+
+        if (!$vehicle) {
+            return response()->json(['message' => 'Bu plakaya ait sistemimizde kayıt bulunmamaktadır.'], 404);
+        }
+
+        return response()->json(['vehicle' => $vehicle]);
+    }
+
     private function normalizePlate(?string $plate): string
     {
         $compactPlate = strtoupper(preg_replace('/\s+/', '', trim((string) $plate)));
