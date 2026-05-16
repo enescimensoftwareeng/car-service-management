@@ -61,7 +61,7 @@ class ServiceController extends Controller
 
         return Inertia::render('Services/Show', [
             'service' => $service,
-            'parts' => Part::all() // Depodaki tüm parçalar frontend'e gönderiliyor
+            'parts' => \App\Models\Part::where('stock', '>', 0)->get() // Sadece stokta olan parçaları gönder
         ]);
     }
 
