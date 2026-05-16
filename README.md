@@ -24,12 +24,3 @@ Proje, **Modüler Monolitik** bir yapıda tasarlanmış olup, Backend ve Fronten
 * **Frontend:** React.js, Vite
 * **Tasarım:** Tailwind CSS, Lucide React (İkonlar)
 * **Veritabanı:** MySQL (Bire-Çok ilişkiler, Cascade silme işlemleri ve Foreign Key kısıtlamaları ile normalize edilmiştir.)
-
-## 🚀 Kurulum Talimatları
-
-Projeyi yerel ortamınızda (localhost) çalıştırmak için aşağıdaki adımları izleyin:
-
-**1. Depoyu Klonlayın**
-```bash
-git clone [https://github.com/enescimensoftwareeng/car-service-management.git](https://github.com/enescimensoftwareeng/car-service-management.git)
-cd car-service-management
