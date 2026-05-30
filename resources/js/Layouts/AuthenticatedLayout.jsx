@@ -26,18 +26,14 @@ export default function AuthenticatedLayout({ user, header, children }) {
 
     useEffect(() => {
         if (flash?.success) {
-            Swal.fire({
-                title: 'Başarılı!',
-                text: flash.success,
-                icon: 'success',
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-            });
         }
     }, [flash?.success]);
+
+    useEffect(() => {
+        if (!toastMessage) return;
+        const timeout = setTimeout(() => setToastMessage(''), 4000);
+        return () => clearTimeout(timeout);
+    }, [toastMessage]);
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans text-slate-900">
@@ -89,7 +85,7 @@ export default function AuthenticatedLayout({ user, header, children }) {
                                                 <span className="font-semibold text-[15px]">Depo & Stoklar</span>
                                             </NavLink>
                                         )}
-                                        
+
                                         {/* SADECE YÖNETİCİ LİNKLERİ */}
                                         {user?.role_id === 1 && (
                                             <div className="relative flex items-center">
@@ -198,7 +194,7 @@ export default function AuthenticatedLayout({ user, header, children }) {
                                 <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>Yönetim Paneli</ResponsiveNavLink>
                                 <ResponsiveNavLink href={route('vehicles.index')} active={route().current('vehicles.index')}>Tüm Araçlar</ResponsiveNavLink>
                                 <ResponsiveNavLink href={route('services.index')} active={route().current('services.*')}>Servis Kayıtları</ResponsiveNavLink>
-                                
+
                                 {user?.role_id === 2 && (
                                     <ResponsiveNavLink href={route('parts.index')} active={route().current('parts.*')}>
                                         Depo & Stoklar

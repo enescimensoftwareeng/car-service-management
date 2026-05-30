@@ -75,20 +75,8 @@ export default function PartsIndex({ auth, parts }) {
     };
 
     const handleDelete = (part) => {
-        Swal.fire({
-            title: 'Emin misiniz?',
-            text: "Bu parçayı silmek istediğinize emin misiniz? Bu işlem geri alınamaz!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#94a3b8',
-            confirmButtonText: 'Evet, Sil!',
-            cancelButtonText: 'İptal'
-        }).then((result) => {
-            if (result.isConfirmed) {
                 destroy(route('parts.destroy', part.id));
             }
-        });
     };
 
     return (
